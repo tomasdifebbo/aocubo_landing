@@ -239,7 +239,7 @@ function normalizeProperty(raw: any): PropertyData {
     area: Number(refUnit.livingArea ?? raw.area ?? mainUnit.livingArea ?? 0),
     parkingSlots: Number(refUnit.parkingSlots ?? raw.parkingSlots ?? mainUnit.parkingSlots ?? 0),
     status,
-    images: images.length > 0 ? images : ["https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"],
+    images: finalImages.length > 0 ? finalImages : ["https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"],
     url: `https://www.aocubo.com/imovel/${raw.slug || raw.id}/${raw.id}`,
     developer: getString(raw.developer, ""),
     characteristics,
