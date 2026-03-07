@@ -188,29 +188,30 @@ function normalizeProperty(raw: any): PropertyData {
   const uPlans = [...new Set(catPlans)];
   const uOther = [...new Set(catOther)];
 
-  // Smart variety filter: Pick one of each priority category for the first slots
+  // Smart variety filter: Pick high-value categories for the first slots
   const images: string[] = [];
 
   // 1. First image MUST be a Facade or Interior if possible
   if (uFacade.length > 0) images.push(uFacade.shift()!);
   else if (uInterior.length > 0) images.push(uInterior.shift()!);
 
-  // 2. Add variety for the next 4 slots (One of each remaining category)
+  // 2. Add variety for the next slots (Interiors and Facades only)
   if (uInterior.length > 0) images.push(uInterior.shift()!);
   if (uFacade.length > 0) images.push(uFacade.shift()!);
-  if (uLeisure.length > 0) images.push(uLeisure.shift()!);
-  if (uPlans.length > 0) images.push(uPlans.shift()!);
+  if (uInterior.length > 0) images.push(uInterior.shift()!);
 
-  // 3. Fill with remaining interiors and facades
+  // 3. Fill with remaining interiors, facades, and other uncategorized real photos
   images.push(...uInterior);
   images.push(...uFacade);
   images.push(...uOther);
 
-  // 4. Fill with remaining leisure and finally plans
+  // 4. Add Leisure images BEFORE plans
   images.push(...uLeisure);
+
+  // 5. Final slot: ALL Plans are DEFINITELY the last ones
   images.push(...uPlans);
 
-  // Limit to a reasonable number and filter duplicates again just in case
+  // Limit and unique result
   const finalImages = [...new Set(images)].slice(0, 40);
 
   // Map status
