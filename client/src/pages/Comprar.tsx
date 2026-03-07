@@ -22,7 +22,7 @@ export default function Comprar() {
     const [inputStatus, setInputStatus] = useState<string>("all");
 
     // Reset page when filters change
-    const applyFilters = () => {
+    const applyFilters = (shouldScroll = false) => {
         setPage(1);
         setFilters({
             neighborhood: inputNeighborhood || undefined,
@@ -30,6 +30,11 @@ export default function Comprar() {
             maxPrice: inputMaxPrice !== "0" ? parseInt(inputMaxPrice) : undefined,
             status: inputStatus === "all" ? undefined : inputStatus,
         });
+
+        if (shouldScroll) {
+            const el = document.getElementById("properties-grid");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+        }
     };
 
     // Auto-apply filters with debounce
@@ -134,7 +139,7 @@ export default function Comprar() {
                                 </div>
 
                                 <div className="col-span-1 lg:col-span-1 flex items-end">
-                                    <Button onClick={applyFilters} className="w-full h-12 md:h-14 text-sm md:text-lg bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-black/10 gap-2 border-0 font-bold rounded-2xl px-2 md:px-10 transition-all hover:scale-[1.02] active:scale-95">
+                                    <Button onClick={() => applyFilters(true)} className="w-full h-12 md:h-14 text-sm md:text-lg bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-black/10 gap-2 border-0 font-bold rounded-2xl px-2 md:px-10 transition-all hover:scale-[1.02] active:scale-95">
                                         <Search className="w-4 h-4 md:w-6 md:h-6" />
                                         Buscar
                                     </Button>

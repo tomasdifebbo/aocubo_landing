@@ -215,7 +215,7 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
 
     // Build query string for aocubo API
     const params = new URLSearchParams();
-    params.set("page", String(page - 1)); // aocubo is 0-indexed
+    params.set("page", String(page)); // Fixed: AoCubo 0/1 are both page 1. Using 1-indexed directly.
     params.set("size", String(limit));
     params.set("search[state.code][value]", "sp");
     params.set("search[state.code][type]", "ILIKE");
@@ -224,7 +224,7 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
     params.set("order[property.views]", "DESC");
 
     // Price filter
-    const priceMin = minPrice ?? 100000;
+    const priceMin = minPrice ?? 0;
     const priceMax = maxPrice ?? 99999999;
     params.set("search[units.price][value]", `${priceMin},${priceMax}`);
     params.set("search[units.price][type]", "BETWEEN");

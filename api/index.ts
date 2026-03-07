@@ -296,7 +296,7 @@ propertiesRouter.get("/", async (req, res) => {
       const ignoredTerms = ["são paulo", "sao paulo", "sp", "são paulo - sp", "sao paulo - sp", "são paulo/sp", "sao paulo/sp"];
       if (!ignoredTerms.includes(nbh.toLowerCase())) {
         params["search[neighborhood.name][value]"] = nbh;
-        params["search[neighborhood.name][type]"] = "EQUAL_UNACCENT";
+        params["search[neighborhood.name][type]"] = "ILIKE";
       }
     }
 

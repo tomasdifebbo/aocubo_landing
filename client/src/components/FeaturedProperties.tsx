@@ -284,7 +284,9 @@ export default function FeaturedProperties({ filters = {}, onPageChange }: Featu
         <div className="text-center mb-16">
           <p className="text-primary text-sm font-semibold uppercase tracking-widest mb-4">Exclusivos</p>
           <h2 className="text-4xl md:text-5xl text-foreground mb-6 font-light">
-            {isComprarPage ? "Todos os Imóveis" : (Object.keys(filters).length > 0 ? "Resultados da sua busca" : "Os melhores imóveis para investimento")}
+            {Object.keys(filters).filter(k => filters[k as keyof typeof filters] !== undefined && filters[k as keyof typeof filters] !== "all").length > 0
+              ? "Resultados da sua busca"
+              : (isComprarPage ? "Todos os Imóveis" : "Os melhores imóveis para investimento")}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-light mb-8">
             {isComprarPage ? `Explorando ${data?.total.toLocaleString("pt-BR") ?? 0} oportunidades em São Paulo.` : (Object.keys(filters).length > 0
