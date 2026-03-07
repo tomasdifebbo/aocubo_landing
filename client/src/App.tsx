@@ -10,6 +10,7 @@ import Comprar from "./pages/Comprar";
 import PropertyDetails from "./pages/PropertyDetails";
 import Favoritos from "./pages/Favoritos";
 import Sobre from "./pages/Sobre";
+import { FavoritesProvider } from "./contexts/FavoritesContext";
 import ScrollToTop from "./components/ScrollToTop";
 
 
@@ -41,11 +42,13 @@ function App() {
       // switchable
       >
         <AuthProvider>
-          <TooltipProvider>
-            <ScrollToTop />
-            <Toaster position="top-right" closeButton richColors />
-            <Router />
-          </TooltipProvider>
+          <FavoritesProvider>
+            <TooltipProvider>
+              <ScrollToTop />
+              <Toaster position="top-right" closeButton richColors />
+              <Router />
+            </TooltipProvider>
+          </FavoritesProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
