@@ -77,7 +77,7 @@ export default function PropertyDetails() {
                 })
             });
 
-            const phoneNumber = "5511953296486";
+            const phoneNumber = "5511995137769";
             const baseMessage = formData.message;
             const fullMessage = `Nome: ${formData.name}\nTelefone: ${formData.phone}\nE-mail: ${formData.email}\n\nMensagem: ${baseMessage}`;
 

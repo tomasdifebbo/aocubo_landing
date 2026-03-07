@@ -169,7 +169,7 @@ export default function Sobre() {
                                 </div>
                                 <h4 className="text-2xl text-slate-900 font-bold mb-6">Pronto para começar?</h4>
                                 <Button asChild variant="outline" className="h-14 px-8 border-slate-200 text-slate-900 hover:bg-slate-900 hover:text-white text-base font-bold rounded-2xl transition-all">
-                                    <a href="https://wa.me/5511953296486" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://wa.me/5511995137769" target="_blank" rel="noopener noreferrer">
                                         Falar com Especialista
                                     </a>
                                 </Button>

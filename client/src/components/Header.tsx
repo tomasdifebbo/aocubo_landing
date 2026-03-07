@@ -50,7 +50,7 @@ export default function Header() {
               Sobre
             </span>
           </Link>
-          <a href="https://wa.me/5511953296486" target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:text-primary transition-colors">
+          <a href="https://wa.me/5511995137769" target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:text-primary transition-colors">
             Contato
           </a>
         </nav>
@@ -155,13 +155,13 @@ export default function Header() {
               <div className="p-6 bg-slate-50 mt-auto">
                 <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Fale Conosco</p>
                 <div className="space-y-3">
-                  <a href="https://wa.me/5511953296486" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
+                  <a href="https://wa.me/5511995137769" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
                     <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm group-hover:shadow-md transition-all">
                       <Phone className="w-3.5 h-3.5 text-primary" />
                     </div>
                     <div>
                       <p className="text-[10px] text-slate-400 font-medium">WhatsApp</p>
-                      <p className="text-xs font-bold text-slate-900">(11) 95329-6486</p>
+                      <p className="text-xs font-bold text-slate-900">(11) 99513-7769</p>
                     </div>
                   </a>
 
