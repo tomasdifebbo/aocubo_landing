@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
 
 interface HeroProps {
   onSearch: (filters: {
@@ -15,22 +13,26 @@ interface HeroProps {
 
 export default function Hero({ onSearch }: HeroProps) {
   const [neighborhood, setNeighborhood] = useState("");
-  const [bedrooms, setBedrooms] = useState<string>("");
-  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [bedrooms, setBedrooms] = useState<string>("0");
+  const [maxPrice, setMaxPrice] = useState<string>("0");
   const [status, setStatus] = useState<string>("all");
 
   const handleSearch = () => {
     onSearch({
       neighborhood: neighborhood || undefined,
-      bedrooms: bedrooms ? parseInt(bedrooms) : undefined,
-      maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
+      bedrooms: bedrooms !== "0" ? parseInt(bedrooms) : undefined,
+      maxPrice: maxPrice !== "0" ? parseInt(maxPrice) : undefined,
       status: status === "all" ? undefined : status,
     });
-
-    // Smooth scroll to properties
-    const el = document.getElementById("properties-grid");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Auto-apply filters with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSearch();
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [neighborhood, bedrooms, maxPrice, status]);
 
   return (
     <section
@@ -53,7 +55,7 @@ export default function Hero({ onSearch }: HeroProps) {
 
         {/* Search Form Container */}
         <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-4 md:p-10 shadow-2xl max-w-5xl mx-auto border border-white/20">
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
 
             <div className="col-span-2 lg:col-span-1 text-left">
               <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Bairro</label>
@@ -98,7 +100,7 @@ export default function Hero({ onSearch }: HeroProps) {
               </Select>
             </div>
 
-            <div className="col-span-1">
+            <div className="col-span-2 lg:col-span-1">
               <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Status</label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
@@ -111,16 +113,6 @@ export default function Hero({ onSearch }: HeroProps) {
                   <SelectItem value="Breve lançamento" className="cursor-pointer">Lança.</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="col-span-1 lg:col-span-1 flex items-end">
-              <Button
-                onClick={handleSearch}
-                className="w-full h-12 md:h-14 text-sm md:text-lg bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-black/10 gap-2 border-0 font-bold rounded-2xl px-2 md:px-10 transition-all hover:scale-[1.02] active:scale-95"
-              >
-                <Search className="w-4 h-4 md:w-6 md:h-6" />
-                Buscar
-              </Button>
             </div>
           </div>
         </div>
