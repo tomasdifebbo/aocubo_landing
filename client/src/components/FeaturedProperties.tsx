@@ -153,7 +153,7 @@ export function PropertyCard({ property, index, showFavorite = true, showRemove 
               e.stopPropagation();
               toggleFavorite(property.id);
             }}
-            className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:bg-red-700 transition-all hover:scale-110"
+            className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-white/60 backdrop-blur-md text-black flex items-center justify-center shadow-sm hover:bg-white hover:scale-110 transition-all"
             title="Remover dos favoritos"
           >
             <X className="w-5 h-5" />
