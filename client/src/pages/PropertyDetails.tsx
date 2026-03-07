@@ -480,7 +480,7 @@ export default function PropertyDetails() {
                                             </form>
 
                                             <p className="text-[10px] text-slate-500 text-center leading-relaxed">
-                                                Ao enviar mensagem você concorda com os <a href="#" className="underline text-inherit">termos de uso</a> e <a href="#" className="underline text-inherit">política de privacidade</a> e confirma ter mais de 18 anos.
+                                                Ao enviar mensagem você concorda com os <Link href="/termos"><span className="underline text-inherit cursor-pointer">termos de uso</span></Link> e <Link href="/privacidade"><span className="underline text-inherit cursor-pointer">política de privacidade</span></Link> e confirma ter mais de 18 anos.
                                             </p>
                                         </div>
 

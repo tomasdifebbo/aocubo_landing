@@ -254,10 +254,12 @@ export default function Header() {
                     <span>Favoritos</span>
                   </DropdownMenuItem>
                 </Link>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Configurações</span>
-                </DropdownMenuItem>
+                <Link href="/configuracoes">
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Configurações</span>
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-red-600 cursor-pointer" onClick={() => signOut()}>
                   <LogOut className="mr-2 h-4 w-4" />

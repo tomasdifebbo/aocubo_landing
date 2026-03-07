@@ -13,6 +13,7 @@ import Sobre from "./pages/Sobre";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
 import ScrollToTop from "./components/ScrollToTop";
 import Legal from "./pages/Legal";
+import Configuracoes from "./pages/Configuracoes";
 
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
       <Route path={"/privacidade"} component={Legal} />
       <Route path={"/termos"} component={Legal} />
       <Route path={"/cookies"} component={Legal} />
+      <Route path={"/configuracoes"} component={Configuracoes} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -138,6 +139,12 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {mode === "login" ? "Entrar" : "Criar Conta"}
                     </Button>
+
+                    {mode === "register" && (
+                        <p className="text-[10px] text-slate-500 text-center leading-relaxed mt-2">
+                            Ao criar conta você concorda com os <Link href="/termos"><span className="underline text-inherit cursor-pointer">termos de uso</span></Link> e <Link href="/privacidade"><span className="underline text-inherit cursor-pointer">política de privacidade</span></Link>.
+                        </p>
+                    )}
                 </form>
 
                 <div className="mt-6 text-center text-sm">
