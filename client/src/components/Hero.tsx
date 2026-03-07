@@ -53,12 +53,12 @@ export default function Hero({ onSearch }: HeroProps) {
           Curadoria exclusiva dos melhores imóveis em São Paulo com a ADJ'S Imóveis.
         </p>
 
-        {/* Search Form Container */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-4 md:p-10 shadow-2xl max-w-5xl mx-auto border border-white/20">
+        {/* Search Form Container - Premium Glass Effect */}
+        <div className="bg-white/40 backdrop-blur-2xl rounded-3xl p-4 md:p-10 shadow-2xl max-w-5xl mx-auto border border-white/30">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
 
             <div className="col-span-2 lg:col-span-1 text-left">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Bairro</label>
+              <label className="block text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-2 md:mb-3">Bairro</label>
               <Input
                 placeholder="Digite o bairro"
                 value={neighborhood}
@@ -68,7 +68,7 @@ export default function Hero({ onSearch }: HeroProps) {
             </div>
 
             <div className="col-span-1">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Quartos</label>
+              <label className="block text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-2 md:mb-3">Quartos</label>
               <Select value={bedrooms} onValueChange={setBedrooms}>
                 <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
                   <SelectValue placeholder="Qualquer" />
@@ -84,7 +84,7 @@ export default function Hero({ onSearch }: HeroProps) {
             </div>
 
             <div className="col-span-1">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Valor</label>
+              <label className="block text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-2 md:mb-3">Valor</label>
               <Select value={maxPrice} onValueChange={setMaxPrice}>
                 <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
                   <SelectValue placeholder="Sem limite" />
@@ -101,7 +101,7 @@ export default function Hero({ onSearch }: HeroProps) {
             </div>
 
             <div className="col-span-2 lg:col-span-1">
-              <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Status</label>
+              <label className="block text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-2 md:mb-3">Status</label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
                   <SelectValue placeholder="Todos" />
