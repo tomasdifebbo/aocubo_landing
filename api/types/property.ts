@@ -45,8 +45,7 @@ export interface RawPropertiesResponse {
     content: RawProperty[];
     totalElements: number;
     totalPages: number;
-    number?: number; // current page (0-indexed)
-    page?: number;   // current page (1-indexed)
+    number: number; // current page (0-indexed)
     size: number;
 }
 

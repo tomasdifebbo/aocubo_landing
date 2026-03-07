@@ -205,11 +205,18 @@ interface FetchOptions {
 export async function fetchProperties(opts: FetchOptions): Promise<PropertiesResponse> {
     const { page, limit, bedrooms, minPrice, maxPrice } = opts;
 
+    // Build cache key from all params
+    const cacheKey = JSON.stringify(opts);
+    const cached = getCached(cacheKey);
+    if (cached) {
+        console.log("[PropertyService] Cache hit for", cacheKey);
+        return cached;
+    }
+
     // Build query string for aocubo API
     const params = new URLSearchParams();
-    params.set("page", String(page));
+    params.set("page", String(page - 1)); // aocubo is 0-indexed
     params.set("size", String(limit));
-    params.set("_cache_bust", Date.now().toString());
     params.set("search[state.code][value]", "sp");
     params.set("search[state.code][type]", "ILIKE");
     params.set("search[city.name][value]", "sao-paulo");
@@ -252,6 +259,7 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
 
     const response = await fetch(url, {
         headers: {
+            "Authorization": "Bearer undefined",
             "Accept": "application/json",
             "User-Agent": "Mozilla/5.0 (compatible; ADJSImoveisLanding/1.0)",
         },
@@ -266,10 +274,11 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
     const result: PropertiesResponse = {
         properties: (raw.content ?? []).map(normalise),
         total: raw.totalElements ?? 0,
-        page: raw.page ?? (raw.number !== undefined ? raw.number + 1 : opts.page),
+        page: (raw.number ?? 0) + 1,
         totalPages: raw.totalPages ?? 1,
     };
 
+    setCache(cacheKey, result);
     console.log(`[PropertyService] Fetched ${result.properties.length} properties (total: ${result.total})`);
 
     return result;
