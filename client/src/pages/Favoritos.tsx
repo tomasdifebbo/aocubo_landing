@@ -56,7 +56,7 @@ export default function Favoritos() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {properties.map((property, i) => (
-                                <PropertyCard key={property.id} property={property} index={i} />
+                                <PropertyCard key={property.id} property={property} index={i} showFavorite={false} />
                             ))}
                         </div>
                     )}

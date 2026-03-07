@@ -79,7 +79,7 @@ export function ImageCycler({ images, title, isHovering }: { images: string[], t
 }
 
 // ─── Property Card ─────────────────────────────────────────────────────────
-export function PropertyCard({ property, index }: { property: PropertyData, index: number }) {
+export function PropertyCard({ property, index, showFavorite = true }: { property: PropertyData, index: number, showFavorite?: boolean }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const favorite = isFavorite(property.id);
   const [isHovered, setIsHovered] = useState(false);
@@ -133,16 +133,18 @@ export function PropertyCard({ property, index }: { property: PropertyData, inde
           if (window.innerWidth < 1024) setIsHovered(true);
         }}
       >
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleFavorite(property.id);
-          }}
-          className={`absolute top-4 left-4 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all ${favorite ? 'bg-red-500 text-white scale-110' : 'bg-white/90 backdrop-blur-md text-foreground hover:bg-white hover:scale-110 shadow-sm'}`}
-        >
-          <Heart className={`w-5 h-5 ${favorite ? 'fill-current text-white' : 'text-slate-600'}`} />
-        </button>
+        {showFavorite && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite(property.id);
+            }}
+            className={`absolute top-4 left-4 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all ${favorite ? 'bg-red-500 text-white scale-110' : 'bg-white/90 backdrop-blur-md text-foreground hover:bg-white hover:scale-110 shadow-sm'}`}
+          >
+            <Heart className={`w-5 h-5 ${favorite ? 'fill-current text-white' : 'text-slate-600'}`} />
+          </button>
+        )}
 
         <Link href={`/imovel/${property.slug}`}>
           <div className="cursor-pointer">
