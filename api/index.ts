@@ -152,79 +152,66 @@ function normalizeProperty(raw: any): PropertyData {
     }
   });
 
-  // Precise 3-tier sorting:
-  // 1. Prime (Facade, interiors) - The only ones we want in the cycle
-  // 2. Technical (Plans) - Moved to bottom
-  // 3. Leisure (Gym, Kids, Pool) - Moved to absolute bottom as requested
+  // Surgical image categorization
+  const catFacade: string[] = [];
+  const catInterior: string[] = [];
+  const catLeisure: string[] = [];
+  const catPlans: string[] = [];
+  const catOther: string[] = [];
 
-  const floorPlanKeywords = [
-    "planta", "pavimento", "implanta", "mapa", "projeto", "floorplan", "layout", "blueprint",
-    "humanizada", "esquema", "tecnica", "final-", "final_", "unidade", "unid-", "unid_",
-    "vaga", "garagem", "escritorio", "detalhe", "localizacao", "tipo", "piso", "pav",
-    "impl", "plant", "floor", "layo", "map", "loca", "schem", "diagram", "croqui",
-    "setor", "bloco", "final", "unid", "tabela", "distancia", "caracteristicas", "ref",
-    "memorial", "quadro", "area", "p_h", "un-", "un_", "u-", "u_", "f-", "f_", "p-", "tec", "croq"
-  ];
+  const planKeywords = ["planta", "pavimento", "implanta", "floorplan", "layout", "humanizada", "unidade", "unid-", "unid_", "loca", "impl", "plant", "floor", "layo", "croqui"];
+  const leisureKeywords = ["academia", "fitness", "ginastica", "kids", "brinquedo", "play", "piscina", "pool", "lazer", "salao", "jogos", "quadra", "churrasqueira", "festa", "pet", "solarium", "deck", "fire", "recre", "bike", "sauna", "gourmet", "spa", "coworking", "lavanderia", "esporte"];
+  const facadeKeywords = ["fachada", "perspectiva", "vista", "frente", "externa", "aerea", "drone", "predio"];
+  const interiorKeywords = ["living", "sala", "dormitorio", "quarto", "suite", "cozinha", "banheiro", "hall", "decorado", "interior", "varanda", "sacada", "dorm", "wc", "area de servico"];
 
-  const leisureKeywords = [
-    "academia", "fitness", "ginastica", "kids", "brinquedo", "play", "piscina", "pool",
-    "lazer", "leisure", "salao", "jogos", "quadra", "churrasqueira", "barbecue", "party",
-    "festa", "pet", "solarium", "deck", "fire", "playground", "recre", "bike", "sauna",
-    "gourmet", "brinquedoteca", "espaco", "spa", "coworking", "lavanderia", "utility", "sport",
-    "fitness", "jogos", "festas", "brincar"
-  ];
+  const allAttachments = [...propertyImages, ...unitImages];
+  allAttachments.forEach(item => {
+    const text = (item.url + " " + item.name).toLowerCase();
 
-  const primeKeywords = [
-    "fachada", "perspectiva", "vista", "frente", "living", "sala", "dormitorio", "quarto",
-    "suite", "cozinha", "banheiro", "hall", "decorado", "interior", "estadia", "principal",
-    "predio", "externa", "varanda", "sacada"
-  ];
-
-  const tier1Prime: string[] = [];
-  const tier2Technical: string[] = [];
-  const tier3Leisure: string[] = [];
-
-  const allImages = [...propertyImages, ...unitImages];
-
-  allImages.forEach(item => {
-    const searchStr = (item.url + " " + item.name).toLowerCase();
-
-    // 1. Check for Leisure first (moved to bottom)
-    const isLeisure = leisureKeywords.some(key => searchStr.includes(key));
-    if (isLeisure) {
-      tier3Leisure.push(item.url);
-      return;
-    }
-
-    // 2. Check for Technical
-    const isTechnical = floorPlanKeywords.some(key => searchStr.includes(key));
-    if (isTechnical) {
-      tier2Technical.push(item.url);
-      return;
-    }
-
-    // 3. Check for Prime
-    const isPrime = primeKeywords.some(key => searchStr.includes(key));
-    if (isPrime) {
-      tier1Prime.push(item.url);
-      return;
-    }
-
-    // Default Fallback
-    const isPropertyLevel = propertyImages.some(p => p.url === item.url);
-    if (isPropertyLevel) {
-      tier1Prime.push(item.url);
+    if (planKeywords.some(k => text.includes(k))) {
+      catPlans.push(item.url);
+    } else if (leisureKeywords.some(k => text.includes(k))) {
+      catLeisure.push(item.url);
+    } else if (facadeKeywords.some(k => text.includes(k))) {
+      catFacade.push(item.url);
+    } else if (interiorKeywords.some(k => text.includes(k))) {
+      catInterior.push(item.url);
     } else {
-      tier2Technical.push(item.url);
+      catOther.push(item.url);
     }
   });
 
-  // Unique and combined: Prime -> Plants -> Leisure last
-  const images = [
-    ...new Set(tier1Prime),
-    ...new Set(tier2Technical),
-    ...new Set(tier3Leisure)
-  ];
+  // Unique arrays
+  const uFacade = [...new Set(catFacade)];
+  const uInterior = [...new Set(catInterior)];
+  const uLeisure = [...new Set(catLeisure)];
+  const uPlans = [...new Set(catPlans)];
+  const uOther = [...new Set(catOther)];
+
+  // Smart variety filter: Pick one of each priority category for the first slots
+  const images: string[] = [];
+
+  // 1. First image MUST be a Facade or Interior if possible
+  if (uFacade.length > 0) images.push(uFacade.shift()!);
+  else if (uInterior.length > 0) images.push(uInterior.shift()!);
+
+  // 2. Add variety for the next 4 slots (One of each remaining category)
+  if (uInterior.length > 0) images.push(uInterior.shift()!);
+  if (uFacade.length > 0) images.push(uFacade.shift()!);
+  if (uLeisure.length > 0) images.push(uLeisure.shift()!);
+  if (uPlans.length > 0) images.push(uPlans.shift()!);
+
+  // 3. Fill with remaining interiors and facades
+  images.push(...uInterior);
+  images.push(...uFacade);
+  images.push(...uOther);
+
+  // 4. Fill with remaining leisure and finally plans
+  images.push(...uLeisure);
+  images.push(...uPlans);
+
+  // Limit to a reasonable number and filter duplicates again just in case
+  const finalImages = [...new Set(images)].slice(0, 40);
 
   // Map status
   const statusRaw = raw.constructionStatus || raw.status || "";
