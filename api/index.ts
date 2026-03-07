@@ -309,11 +309,13 @@ propertiesRouter.get("/", async (req, res) => {
 
     if (req.query.status) {
       let statusCode = "";
-      if (req.query.status === "Pronto") statusCode = "COMPLETE";
-      else if (req.query.status === "Em obras") statusCode = "UNDER_CONSTRUCTION";
+      if (req.query.status === "Em obras") statusCode = "UNDER_CONSTRUCTION";
       else if (req.query.status === "Breve lançamento") statusCode = "NEW_DEVELOPMENT";
 
-      if (statusCode) {
+      if (req.query.status === "Pronto") {
+        params["search[property.constructionStatus][value]"] = "COMPLETE,READY";
+        params["search[property.constructionStatus][type]"] = "IN";
+      } else if (statusCode) {
         params["search[property.constructionStatus][value]"] = statusCode;
         params["search[property.constructionStatus][type]"] = "EQUAL";
       }
