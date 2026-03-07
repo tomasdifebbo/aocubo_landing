@@ -55,7 +55,7 @@ export function ImageCycler({ images, title, isHovering }: { images: string[], t
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 2.5, ease: "easeInOut" }} // Even smoother for slower pace
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover transition-transform duration-[10000ms] group-hover:scale-110 contrast-[1.05] brightness-[1.05] saturate-[1.1]"
           onError={(e) => {
             (e.target as HTMLImageElement).src =
               "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp";

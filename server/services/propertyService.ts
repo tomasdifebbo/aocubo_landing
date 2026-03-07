@@ -114,8 +114,16 @@ function normalise(raw: RawProperty): Property {
 
     const extractUrl = (a: any) => {
         if (!a) return null;
-        let url = typeof a === "string" ? a : a.url;
+        let url = typeof a === "string" ? a : (a.url || a.originalUrl);
         if (typeof url !== "string") return null;
+
+        // AoCubo High Quality Trick: 
+        // Removing .webp from .jpg.webp often returns a higher bitrate/cleaner original.
+        if (url.toLowerCase().endsWith(".jpg.webp")) {
+            url = url.substring(0, url.length - 5);
+        } else if (url.toLowerCase().endsWith(".png.webp")) {
+            url = url.substring(0, url.length - 5);
+        }
 
         // Ensure it's an absolute URL
         if (url.startsWith("http")) return url;
