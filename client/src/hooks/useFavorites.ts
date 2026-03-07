@@ -29,6 +29,7 @@ export function useFavorites() {
                 ? prev.filter((i) => i !== id)
                 : [...prev, id];
             localStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+            window.location.reload();
             return next;
         });
     };
