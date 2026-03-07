@@ -388,14 +388,23 @@ propertiesRouter.get("/:slug", async (req, res) => {
 propertiesRouter.post("/batch", async (req, res) => {
   try {
     const { ids } = req.body;
-    if (!Array.isArray(ids)) return res.json({ properties: [] });
-    // For simplicity, we fetch a large page and filter. 
-    // Ideally AoCubo has a batch API, but we'll fallback to this.
-    const data = await fetchAocubo("", { limit: 100 });
-    const content = data.content || [];
-    const filtered = content.filter((p: any) => ids.includes(String(p.id))).map(normalizeProperty);
-    res.json({ properties: filtered });
+    if (!Array.isArray(ids) || ids.length === 0) return res.json({ properties: [] });
+
+    // Fetch each property individually to ensure we get results even if they aren't on the first page
+    const properties = await Promise.all(ids.map(async (id: string) => {
+      try {
+        const data = await fetchAocubo(`/${id}`);
+        return normalizeProperty(data);
+      } catch (err) {
+        console.error(`Error fetching property ${id} in batch:`, err);
+        return null;
+      }
+    }));
+
+    // Filter out failed ones
+    res.json({ properties: properties.filter(p => p !== null) });
   } catch (error: any) {
+    console.error("Batch Error:", error);
     res.status(500).json({ error: error.message });
   }
 });
