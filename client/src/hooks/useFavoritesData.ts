@@ -37,5 +37,5 @@ export function useFavoritesData() {
         return () => { cancelled = true; };
     }, [favorites]);
 
-    return { data, loading, error };
+    return { data, setData, loading, error };
 }

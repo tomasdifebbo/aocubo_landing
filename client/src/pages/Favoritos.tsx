@@ -9,8 +9,13 @@ import { Button } from "@/components/ui/button";
 import { PropertyCard } from "@/components/FeaturedProperties";
 
 export default function Favoritos() {
-    const { data: properties, loading } = useFavoritesData();
-    const { favorites } = useFavorites();
+    const { data: properties, setData, loading } = useFavoritesData();
+    const { favorites, toggleFavorite } = useFavorites();
+
+    const handleRemove = (id: string) => {
+        toggleFavorite(id);
+        setData(prev => prev.filter(p => p.id !== id));
+    };
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
@@ -56,7 +61,14 @@ export default function Favoritos() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {properties.map((property, i) => (
-                                <PropertyCard key={property.id} property={property} index={i} showFavorite={false} showRemove={true} />
+                                <PropertyCard
+                                    key={property.id}
+                                    property={property}
+                                    index={i}
+                                    showFavorite={false}
+                                    showRemove={true}
+                                    onRemove={() => handleRemove(property.id)}
+                                />
                             ))}
                         </div>
                     )}

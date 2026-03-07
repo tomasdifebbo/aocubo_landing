@@ -79,7 +79,7 @@ export function ImageCycler({ images, title, isHovering }: { images: string[], t
 }
 
 // ─── Property Card ─────────────────────────────────────────────────────────
-export function PropertyCard({ property, index, showFavorite = true, showRemove = false }: { property: PropertyData, index: number, showFavorite?: boolean, showRemove?: boolean }) {
+export function PropertyCard({ property, index, showFavorite = true, showRemove = false, onRemove }: { property: PropertyData, index: number, showFavorite?: boolean, showRemove?: boolean, onRemove?: () => void }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const favorite = isFavorite(property.id);
   const [isHovered, setIsHovered] = useState(false);
@@ -151,9 +151,10 @@ export function PropertyCard({ property, index, showFavorite = true, showRemove 
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              toggleFavorite(property.id);
+              if (onRemove) onRemove();
+              else toggleFavorite(property.id);
             }}
-            className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-white/60 backdrop-blur-md text-black flex items-center justify-center shadow-sm hover:bg-white hover:scale-110 transition-all"
+            className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-white/60 backdrop-blur-md text-black flex items-center justify-center shadow-sm hover:bg-white hover:scale-110 transition-all font-bold"
             title="Remover dos favoritos"
           >
             <X className="w-5 h-5" />
