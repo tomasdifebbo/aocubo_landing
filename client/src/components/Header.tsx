@@ -12,10 +12,37 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { UserCircle, LogOut, Settings, Heart, Menu, Home, Building2, Info, Phone, Mail } from "lucide-react";
+import { UserCircle, LogOut, Settings, Heart, Menu, Home, Building2, Info, Phone, Mail, ShoppingCart } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useFavoritesData } from "@/hooks/useFavoritesData";
+import { toast } from "sonner";
 
 export default function Header() {
   const { user, signOut, authModal, openLogin, openRegister, closeAuth, setAuthModalMode } = useAuth();
+  const { favorites } = useFavorites();
+  const { data: favsData } = useFavoritesData();
+
+  const handleComprar = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      openLogin();
+      return;
+    }
+
+    if (favorites.length === 0) {
+      toast.info("Por favor, favorite primeiro um imóvel para solicitar orçamento.", {
+        icon: <Heart className="w-4 h-4 text-red-500 fill-current" />
+      });
+      // Optionally redirect to search page if not there
+      return;
+    }
+
+    // Send favorites via WhatsApp
+    const phoneNumber = "5511995137769";
+    const links = favsData.map(f => `• ${f.title}\n  https://adjsimoveis.vercel.app/imovel/${f.slug}/${f.id}`).join("\n\n");
+    const message = `Olá! Tenho interesse nos seguintes imóveis favoritos:\n\n${links}`;
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
+  };
 
   const toggleMode = () => setAuthModalMode(authModal.mode === "login" ? "register" : "login");
   return (
@@ -130,6 +157,13 @@ export default function Header() {
                       </div>
                     </Link>
 
+                    <div className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-slate-50 transition-all group cursor-pointer" onClick={handleComprar}>
+                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-md transition-all">
+                        <ShoppingCart className="w-4 h-4 text-slate-600 group-hover:text-primary" />
+                      </div>
+                      <span className="text-base font-medium text-slate-700 group-hover:text-slate-950">Comprar</span>
+                    </div>
+
                     <Link href="/favoritos">
                       <div className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-slate-50 transition-all group cursor-pointer">
                         <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-md transition-all">
@@ -194,11 +228,12 @@ export default function Header() {
 
         {/* CTA Button / User Menu (Desktop) */}
         <div className="hidden md:flex items-center gap-4">
-          <Link href="/comprar" className="hidden sm:block">
-            <span className="text-sm font-medium hover:text-primary transition-colors cursor-pointer mr-4">
-              Comprar
-            </span>
-          </Link>
+          <button
+            onClick={handleComprar}
+            className="text-sm font-medium hover:text-primary transition-colors cursor-pointer mr-4"
+          >
+            Comprar
+          </button>
 
           {user ? (
             <DropdownMenu>
