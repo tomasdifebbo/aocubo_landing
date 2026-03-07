@@ -12,6 +12,7 @@ import Favoritos from "./pages/Favoritos";
 import Sobre from "./pages/Sobre";
 import { FavoritesProvider } from "./contexts/FavoritesContext";
 import ScrollToTop from "./components/ScrollToTop";
+import Legal from "./pages/Legal";
 
 
 function Router() {
@@ -22,6 +23,9 @@ function Router() {
       <Route path={"/favoritos"} component={Favoritos} />
       <Route path={"/imovel/:slug"} component={PropertyDetails} />
       <Route path={"/sobre"} component={Sobre} />
+      <Route path={"/privacidade"} component={Legal} />
+      <Route path={"/termos"} component={Legal} />
+      <Route path={"/cookies"} component={Legal} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

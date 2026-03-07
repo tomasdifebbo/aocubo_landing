@@ -88,9 +88,9 @@ export default function Footer() {
           {/* Bottom Links */}
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
             <div className="flex flex-wrap gap-4 text-sm text-white/90">
-              <a href="#" className="hover:text-primary transition-colors">Política de Privacidade</a>
-              <a href="#" className="hover:text-primary transition-colors">Termos de Uso</a>
-              <a href="#" className="hover:text-primary transition-colors">Política de Cookies</a>
+              <Link href="/privacidade"><span className="hover:text-primary transition-colors cursor-pointer">Política de Privacidade</span></Link>
+              <Link href="/termos"><span className="hover:text-primary transition-colors cursor-pointer">Termos de Uso</span></Link>
+              <Link href="/cookies"><span className="hover:text-primary transition-colors cursor-pointer">Política de Cookies</span></Link>
             </div>
           </div>
 
