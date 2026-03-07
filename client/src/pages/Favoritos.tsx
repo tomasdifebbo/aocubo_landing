@@ -4,12 +4,13 @@ import { useFavoritesData } from "@/hooks/useFavoritesData";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Card } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Heart, MapPin, BedDouble, Maximize2, MoveRight, House } from "lucide-react";
+import { Heart, House, MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PropertyCard } from "@/components/FeaturedProperties";
 
 export default function Favoritos() {
     const { data: properties, loading } = useFavoritesData();
-    const { favorites, toggleFavorite, isFavorite } = useFavorites();
+    const { favorites } = useFavorites();
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
@@ -33,7 +34,7 @@ export default function Favoritos() {
                     {loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                             {[1, 2, 3].map(i => (
-                                <Card key={i} className="h-[450px] animate-pulse bg-white border-0 shadow-sm" />
+                                <Card key={i} className="h-[450px] animate-pulse bg-white border-0 shadow-sm rounded-3xl" />
                             ))}
                         </div>
                     ) : favorites.length === 0 ? (
@@ -54,51 +55,8 @@ export default function Favoritos() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {properties.map((property) => (
-                                <Card key={property.id} className="overflow-hidden bg-white border-0 shadow-sm hover:shadow-xl transition-all duration-300 group relative rounded-2xl">
-                                    <button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            toggleFavorite(property.id);
-                                        }}
-                                        className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
-                                    >
-                                        <Heart className="w-5 h-5 fill-current" />
-                                    </button>
-
-                                    <Link href={`/imovel/${property.slug}`}>
-                                        <div className="cursor-pointer">
-                                            <div className="relative h-64 overflow-hidden">
-                                                <img
-                                                    src={property.images[0]}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                    alt={property.title}
-                                                />
-                                                <div className="absolute top-4 right-4 bg-slate-900 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full px-4">
-                                                    {property.status}
-                                                </div>
-                                            </div>
-                                            <div className="p-6">
-                                                <h3 className="text-xl font-semibold mb-2 line-clamp-1 text-slate-900">{property.title}</h3>
-                                                <div className="text-2xl font-bold text-primary mb-4">R$ {property.priceFormatted}</div>
-                                                <div className="flex items-center gap-2 text-slate-600 text-sm mb-4">
-                                                    <MapPin className="w-4 h-4" />
-                                                    <span className="truncate">{property.neighborhood}</span>
-                                                </div>
-                                                <div className="flex gap-6 pt-4 border-t border-slate-50 text-slate-700">
-                                                    <div className="flex items-center gap-2">
-                                                        <BedDouble className="w-4 h-4 text-primary" />
-                                                        <span className="text-sm font-medium">{property.bedrooms} qtos</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Maximize2 className="w-4 h-4 text-primary" />
-                                                        <span className="text-sm font-medium">{property.area} m²</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </Card>
+                            {properties.map((property, i) => (
+                                <PropertyCard key={property.id} property={property} index={i} />
                             ))}
                         </div>
                     )}

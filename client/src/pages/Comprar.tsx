@@ -32,6 +32,14 @@ export default function Comprar() {
         });
     };
 
+    // Auto-apply filters with debounce
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            applyFilters();
+        }, 600); // 600ms debounce
+        return () => clearTimeout(timer);
+    }, [inputNeighborhood, inputBedrooms, inputMaxPrice, inputStatus]);
+
     const clearFilters = () => {
         setInputNeighborhood("");
         setInputBedrooms("0");
@@ -47,85 +55,90 @@ export default function Comprar() {
 
             <main className="flex-1">
                 {/* Header Section */}
-                <section className="bg-secondary/30 py-12 md:py-20">
-                    <div className="container">
-                        <h1 className="text-4xl md:text-5xl font-light text-foreground mb-4">Comprar Imóveis</h1>
-                        <p className="text-lg text-muted-foreground max-w-2xl">
+                <section
+                    className="relative w-full pt-20 pb-24 md:pt-32 md:pb-40 bg-cover bg-center flex flex-col justify-center"
+                    style={{
+                        backgroundImage: 'url(/hero-luxury.png)',
+                        backgroundAttachment: 'fixed',
+                    }}
+                >
+                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px]"></div>
+
+                    <div className="container relative z-10">
+                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif italic text-white mb-4 text-center">Comprar Imóveis</h1>
+                        <p className="text-lg text-slate-200 max-w-2xl mb-12 text-center mx-auto drop-shadow-md">
                             Explore nossa seleção completa de imóveis exclusivos em São Paulo.
                             Use os filtros abaixo para encontrar o lar perfeito para você.
                         </p>
-                    </div>
-                </section>
 
-                {/* Filter Bar */}
-                <section className="sticky top-16 md:top-20 z-40 bg-white border-b border-border py-6 shadow-sm">
-                    <div className="container">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Localização</label>
-                                <Input
-                                    placeholder="Bairro"
-                                    value={inputNeighborhood}
-                                    onChange={(e) => setInputNeighborhood(e.target.value)}
-                                    className="h-10"
-                                />
-                            </div>
+                        {/* Search Form Container - Compact Design for Mobile */}
+                        <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-4 md:p-10 shadow-2xl max-w-5xl mx-auto border border-white/20">
+                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
 
-                            <div>
-                                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quartos</label>
-                                <Select value={inputBedrooms} onValueChange={setInputBedrooms}>
-                                    <SelectTrigger className="h-10">
-                                        <SelectValue placeholder="Qualquer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="0">Qualquer</SelectItem>
-                                        <SelectItem value="1">1 Quarto</SelectItem>
-                                        <SelectItem value="2">2 Quartos</SelectItem>
-                                        <SelectItem value="3">3 Quartos</SelectItem>
-                                        <SelectItem value="4">4+ Quartos</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                <div className="col-span-2 lg:col-span-1 text-left">
+                                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Bairro</label>
+                                    <Input
+                                        placeholder="Digite o bairro"
+                                        value={inputNeighborhood}
+                                        onChange={(e) => setInputNeighborhood(e.target.value)}
+                                        className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20"
+                                    />
+                                </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Valor Máximo</label>
-                                <Select value={inputMaxPrice} onValueChange={setInputMaxPrice}>
-                                    <SelectTrigger className="h-10">
-                                        <SelectValue placeholder="Sem limite" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="0">Sem limite</SelectItem>
-                                        <SelectItem value="500000">Até R$ 500 mil</SelectItem>
-                                        <SelectItem value="1000000">Até R$ 1 milhão</SelectItem>
-                                        <SelectItem value="2000000">Até R$ 2 milhões</SelectItem>
-                                        <SelectItem value="5000000">Até R$ 5 milhões</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                <div className="col-span-1">
+                                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Quartos</label>
+                                    <Select value={inputBedrooms} onValueChange={setInputBedrooms}>
+                                        <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
+                                            <SelectValue placeholder="Qualquer" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                                            <SelectItem value="0" className="cursor-pointer">Qualquer</SelectItem>
+                                            <SelectItem value="1" className="cursor-pointer">1 Quarto</SelectItem>
+                                            <SelectItem value="2" className="cursor-pointer">2 Quartos</SelectItem>
+                                            <SelectItem value="3" className="cursor-pointer">3 Quartos</SelectItem>
+                                            <SelectItem value="4" className="cursor-pointer">4+ Quartos</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Status</label>
-                                <Select value={inputStatus} onValueChange={setInputStatus}>
-                                    <SelectTrigger className="h-10">
-                                        <SelectValue placeholder="Todos" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">Todos</SelectItem>
-                                        <SelectItem value="Pronto">Pronto</SelectItem>
-                                        <SelectItem value="Em obras">Em obras</SelectItem>
-                                        <SelectItem value="Breve lançamento">Breve lançamento</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                <div className="col-span-1">
+                                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Valor</label>
+                                    <Select value={inputMaxPrice} onValueChange={setInputMaxPrice}>
+                                        <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
+                                            <SelectValue placeholder="Sem limite" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                                            <SelectItem value="0" className="cursor-pointer">Max</SelectItem>
+                                            <SelectItem value="250000" className="cursor-pointer">Até 250 mil</SelectItem>
+                                            <SelectItem value="400000" className="cursor-pointer">Até 400 mil</SelectItem>
+                                            <SelectItem value="500000" className="cursor-pointer">Até 500 mil</SelectItem>
+                                            <SelectItem value="1000000" className="cursor-pointer">Até 1M</SelectItem>
+                                            <SelectItem value="5000000" className="cursor-pointer">Até 5M</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                            <div className="flex gap-2 items-end">
-                                <Button onClick={applyFilters} className="flex-1 h-10 gap-2">
-                                    <Search className="w-4 h-4" />
-                                    Filtrar
-                                </Button>
-                                <Button onClick={clearFilters} variant="outline" className="h-10" title="Limpar filtros">
-                                    <FilterX className="w-4 h-4" />
-                                </Button>
+                                <div className="col-span-1">
+                                    <label className="block text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2 md:mb-3">Status</label>
+                                    <Select value={inputStatus} onValueChange={setInputStatus}>
+                                        <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
+                                            <SelectValue placeholder="Todos" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                                            <SelectItem value="all" className="cursor-pointer">Todos</SelectItem>
+                                            <SelectItem value="Pronto" className="cursor-pointer">Pronto</SelectItem>
+                                            <SelectItem value="Em obras" className="cursor-pointer">Obras</SelectItem>
+                                            <SelectItem value="Breve lançamento" className="cursor-pointer">Lança.</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="col-span-1 lg:col-span-1 flex items-end">
+                                    <Button onClick={applyFilters} className="w-full h-12 md:h-14 text-sm md:text-lg bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-black/10 gap-2 border-0 font-bold rounded-2xl px-2 md:px-10 transition-all hover:scale-[1.02] active:scale-95">
+                                        <Search className="w-4 h-4 md:w-6 md:h-6" />
+                                        Buscar
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -133,8 +146,7 @@ export default function Comprar() {
 
                 {/* Results */}
                 <FeaturedProperties
-                    filters={{ ...filters, page, limit: 12 }}
-                    onPageChange={setPage}
+                    filters={filters}
                 />
             </main>
 

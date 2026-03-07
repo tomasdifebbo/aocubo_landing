@@ -1,4 +1,5 @@
 import { Linkedin, Youtube, Instagram, Facebook, Mail, Phone, MapPin } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Footer() {
   return (
@@ -20,10 +21,22 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-lg mb-6">Navegação</h4>
             <ul className="space-y-3">
-              <li><a href="#" className="text-white/90 hover:text-primary transition-colors">Início</a></li>
-              <li><a href="#" className="text-white/90 hover:text-primary transition-colors">Imóveis</a></li>
-              <li><a href="#" className="text-white/90 hover:text-primary transition-colors">Sobre</a></li>
-              <li><a href="#" className="text-white/90 hover:text-primary transition-colors">Blog</a></li>
+              <li>
+                <Link href="/">
+                  <span className="text-white/90 hover:text-primary transition-colors cursor-pointer">Início</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/comprar">
+                  <span className="text-white/90 hover:text-primary transition-colors cursor-pointer">Imóveis</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/sobre">
+                  <span className="text-white/90 hover:text-primary transition-colors cursor-pointer">Sobre</span>
+                </Link>
+              </li>
+
             </ul>
           </div>
 
@@ -33,14 +46,14 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-primary" />
-                <a href="mailto:marketing@aocubo.com" className="text-white/90 hover:text-primary transition-colors">
-                  marketing@aocubo.com
+                <a href="mailto:contato@adjsimoveis.com.br" className="text-white/90 hover:text-primary transition-colors">
+                  contato@adjsimoveis.com.br
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-primary" />
-                <a href="tel:+5511911795197" className="text-white/90 hover:text-primary transition-colors">
-                  (11) 91179-5197
+                <a href="tel:+5511953296486" className="text-white/90 hover:text-primary transition-colors">
+                  (11) 95329-6486
                 </a>
               </li>
               <li className="flex items-center gap-3">
@@ -83,7 +96,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <div className="text-center text-sm text-white/70">
-            <p>&copy; 2026 ADJ'S Imóveis. Todos os direitos reservados. CRECI-SP 39526-J</p>
+            <p>&copy; 2026 ADJ'S Imóveis. Todos os direitos reservados. CRECI-SP 212875-F</p>
           </div>
         </div>
       </div>

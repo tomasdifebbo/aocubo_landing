@@ -2,7 +2,7 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
-import propertiesRouter from "./routes/properties.js";
+import propertiesRouter from "./routes/properties";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,13 +37,25 @@ async function startServer() {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
-  const port = process.env.PORT || 4000;
-
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
-    console.log(`API available at http://localhost:${port}/api/properties`);
-  });
+  // No changes needed for the routes logic, but we need the app to be accessible
+  return app;
 }
 
-startServer().catch(console.error);
+const appPromise = startServer();
 
+// For Vercel serverless functions
+export default async (req: any, res: any) => {
+  const app = await appPromise;
+  return app(req, res);
+};
+
+// Also keep the local listener for dev/prod local runs
+appPromise.then(app => {
+  const port = process.env.PORT || 4000;
+  if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+    app.listen(port, () => {
+      console.log(`Server running on http://localhost:${port}/`);
+      console.log(`API available at http://localhost:${port}/api/properties`);
+    });
+  }
+}).catch(console.error);

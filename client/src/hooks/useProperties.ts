@@ -30,6 +30,7 @@ export interface PropertyData {
     characteristics: string[];
     units: PropertyUnit[];
     type: string;
+    address?: string;
 }
 
 export interface PropertiesResult {

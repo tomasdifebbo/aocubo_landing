@@ -1,6 +1,8 @@
 import { useParams, Link } from "wouter";
 import { useProperty } from "@/hooks/useProperty";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useFavoritesData } from "@/hooks/useFavoritesData";
+import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useMemo, useEffect } from "react";
 import { MessageSquare, Send } from "lucide-react";
+import { toast } from "sonner";
 import {
     BedDouble,
     Maximize2,
@@ -25,13 +28,16 @@ import {
     PhoneCall,
     Info,
     ArrowUpRight,
-    Camera
+    Camera,
+    Loader2
 } from "lucide-react";
 
 export default function PropertyDetails() {
     const { slug } = useParams();
     const { data: property, loading, error } = useProperty(slug);
     const { toggleFavorite, isFavorite } = useFavorites();
+    const { data: favsData } = useFavoritesData();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // State to track selected unit for dynamic updates
     const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
@@ -53,12 +59,39 @@ export default function PropertyDetails() {
         }
     }, [property]);
 
-    const handleFormSubmit = (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Here you would typically send the form data to an API
-        console.log("Enviando mensagem:", formData);
-        alert("Mensagem enviada com sucesso! Entraremos em contato em breve.");
-        setFormData({ name: "", phone: "", email: "", message: `Olá! Gostaria de mais informações sobre o empreendimento ${property?.title} encontrado na ADJ'S Imóveis. Seria possível fornecer detalhes adicionais?` });
+        setIsSubmitting(true);
+
+        try {
+            // Send e-mail automatically
+            await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    message: formData.message,
+                    favorites: favsData // Send the full property data of favorites
+                })
+            });
+
+            const phoneNumber = "5511953296486";
+            const baseMessage = formData.message;
+            const fullMessage = `Nome: ${formData.name}\nTelefone: ${formData.phone}\nE-mail: ${formData.email}\n\nMensagem: ${baseMessage}`;
+
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(fullMessage)}`;
+
+            // Redirect to WhatsApp
+            window.open(whatsappUrl, "_blank");
+
+            toast.success("Mensagem enviada com sucesso!");
+        } catch (err) {
+            console.error("Error sending contact:", err);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // Lightbox State
@@ -89,6 +122,7 @@ export default function PropertyDetails() {
         if (!displayData) return;
         setCurrentImageIndex((prev) => (prev - 1 + displayData.images.length) % displayData.images.length);
     };
+
 
     // Memoized selection logic
     const displayData = useMemo(() => {
@@ -123,6 +157,17 @@ export default function PropertyDetails() {
         };
     }, [property, selectedUnitId]);
 
+    // Auto-cycle images if not in lightbox
+    useEffect(() => {
+        if (lightboxOpen || !displayData || displayData.images.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentImageIndex(prev => (prev + 1) % displayData.images.length);
+        }, 5000); // Cycle every 5 seconds
+
+        return () => clearInterval(interval);
+    }, [lightboxOpen, displayData?.images.length]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col pt-20 items-center justify-center bg-white">
@@ -154,17 +199,23 @@ export default function PropertyDetails() {
                 {/* Premium Image Gallery */}
                 <div className="relative h-[65vh] bg-slate-100 overflow-hidden">
                     <div className="flex h-full gap-1 p-1 overflow-hidden">
-                        {/* Main Large Image */}
-                        <div className="flex-[2] relative overflow-hidden group cursor-pointer" onClick={() => openLightbox(0)}>
-                            <img
-                                key={displayData.images[0]}
-                                src={displayData.images[0] || "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"}
-                                alt={property.title}
-                                className="w-full h-full object-cover transition-all duration-700 animate-in fade-in hover:scale-105"
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).src = "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp";
-                                }}
-                            />
+                        <div className="flex-[2] relative overflow-hidden group cursor-pointer" onClick={() => openLightbox(currentImageIndex)}>
+                            <AnimatePresence mode="wait">
+                                <motion.img
+                                    key={currentImageIndex}
+                                    src={displayData.images[currentImageIndex] || "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"}
+                                    alt={property.title}
+                                    initial={{ opacity: 0, scale: 1.05 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 1.2 }}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp";
+                                    }}
+                                />
+                            </AnimatePresence>
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors pointer-events-none" />
                         </div>
                         {/* Second Image (Tablet/Desktop) */}
                         <div className="flex-1 hidden md:block overflow-hidden cursor-pointer" onClick={() => openLightbox(1)}>
@@ -246,9 +297,16 @@ export default function PropertyDetails() {
                                 <h1 className="text-5xl md:text-6xl font-normal text-slate-900 mb-6 leading-tight font-serif italic">
                                     {property.title}
                                 </h1>
-                                <div className="flex items-center gap-2 text-slate-900 text-lg">
-                                    <MapPin className="w-5 h-5 text-amber-400" />
-                                    <span>{property.neighborhood}, São Paulo - SP</span>
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-slate-900 text-lg">
+                                        <MapPin className="w-5 h-5 text-amber-400" />
+                                        <span>{property.neighborhood}, São Paulo - SP</span>
+                                    </div>
+                                    <div className="pl-7">
+                                        <p className="text-sm text-slate-500 font-medium">
+                                            {property.address || "Endereço sob consulta"}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -404,10 +462,20 @@ export default function PropertyDetails() {
                                                 />
                                                 <Button
                                                     type="submit"
+                                                    disabled={isSubmitting}
                                                     className="w-full h-14 bg-slate-900 text-white hover:bg-slate-800 border-0 font-bold text-lg rounded-full flex items-center justify-center gap-3 shadow-xl shadow-black/10 transition-all hover:scale-[1.02] active:scale-95 group"
                                                 >
-                                                    <span>Enviar mensagem</span>
-                                                    <Send className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                                                    {isSubmitting ? (
+                                                        <>
+                                                            <span>Enviando...</span>
+                                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span>Enviar mensagem</span>
+                                                            <Send className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                                                        </>
+                                                    )}
                                                 </Button>
                                             </form>
 
@@ -416,17 +484,7 @@ export default function PropertyDetails() {
                                             </p>
                                         </div>
 
-                                        <div className="text-center pt-2">
-                                            <a
-                                                href={property.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-slate-400 hover:text-slate-600 text-[10px] font-medium flex items-center justify-center gap-1.5 transition-colors uppercase tracking-widest"
-                                            >
-                                                Ver no site oficial
-                                                <ExternalLink className="w-3 h-3 opacity-40" />
-                                            </a>
-                                        </div>
+
 
                                         <div className="pt-8 border-t border-slate-50">
                                             <div className="flex items-center gap-4">
@@ -435,7 +493,7 @@ export default function PropertyDetails() {
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-slate-900 text-sm">Consultoria ADJ'S Imóveis</p>
-                                                    <p className="text-[10px] text-slate-600 font-medium">Registro CRECI 39526-J</p>
+                                                    <p className="text-[10px] text-slate-600 font-medium">Registro CRECI 212875-F</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -472,13 +530,14 @@ export default function PropertyDetails() {
 
                     {/* Main Image View */}
                     <div className="relative w-full h-full flex items-center justify-center p-4 md:p-12 overflow-hidden">
+                        {/* Left Arrow */}
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={prevImage}
-                            className="absolute left-6 text-white hover:bg-white/10 rounded-full h-16 w-16 hidden md:flex"
+                            className="absolute left-4 md:left-8 z-[110] text-white hover:bg-white/10 rounded-full h-14 w-14 md:h-20 md:w-20 flex items-center justify-center transition-all bg-black/20 backdrop-blur-sm"
                         >
-                            <ChevronLeft className="w-10 h-10" />
+                            <ChevronLeft className="w-8 h-8 md:w-12 md:h-12" />
                         </Button>
 
                         <img
@@ -488,23 +547,14 @@ export default function PropertyDetails() {
                             onClick={(e) => e.stopPropagation()}
                         />
 
+                        {/* Right Arrow */}
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={nextImage}
-                            className="absolute right-6 text-white hover:bg-white/10 rounded-full h-16 w-16 hidden md:flex"
+                            className="absolute right-4 md:right-8 z-[110] text-white hover:bg-white/10 rounded-full h-14 w-14 md:h-20 md:w-20 flex items-center justify-center transition-all bg-black/20 backdrop-blur-sm"
                         >
-                            <ChevronRight className="w-10 h-10" />
-                        </Button>
-                    </div>
-
-                    {/* Mobile Controls */}
-                    <div className="md:hidden absolute bottom-12 flex gap-8">
-                        <Button variant="ghost" className="text-white bg-white/10 rounded-full p-4 h-14 w-14" onClick={prevImage}>
-                            <ChevronLeft className="w-6 h-6" />
-                        </Button>
-                        <Button variant="ghost" className="text-white bg-white/10 rounded-full p-4 h-14 w-14" onClick={nextImage}>
-                            <ChevronRight className="w-6 h-6" />
+                            <ChevronRight className="w-8 h-8 md:w-12 md:h-12" />
                         </Button>
                     </div>
 
