@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BedDouble, Maximize2, MapPin, RefreshCw, AlertCircle, Heart, Loader2 } from "lucide-react";
+import { BedDouble, Maximize2, MapPin, RefreshCw, AlertCircle, Heart, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useProperties, type PropertyData, type UsePropertiesOptions } from "@/hooks/useProperties";
@@ -79,7 +79,7 @@ export function ImageCycler({ images, title, isHovering }: { images: string[], t
 }
 
 // ─── Property Card ─────────────────────────────────────────────────────────
-export function PropertyCard({ property, index, showFavorite = true }: { property: PropertyData, index: number, showFavorite?: boolean }) {
+export function PropertyCard({ property, index, showFavorite = true, showRemove = false }: { property: PropertyData, index: number, showFavorite?: boolean, showRemove?: boolean }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const favorite = isFavorite(property.id);
   const [isHovered, setIsHovered] = useState(false);
@@ -143,6 +143,20 @@ export function PropertyCard({ property, index, showFavorite = true }: { propert
             className={`absolute top-4 left-4 z-20 w-10 h-10 rounded-full flex items-center justify-center transition-all ${favorite ? 'bg-red-500 text-white scale-110' : 'bg-white/90 backdrop-blur-md text-foreground hover:bg-white hover:scale-110 shadow-sm'}`}
           >
             <Heart className={`w-5 h-5 ${favorite ? 'fill-current text-white' : 'text-slate-600'}`} />
+          </button>
+        )}
+
+        {showRemove && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite(property.id);
+            }}
+            className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:bg-red-700 transition-all hover:scale-110"
+            title="Remover dos favoritos"
+          >
+            <X className="w-5 h-5" />
           </button>
         )}
 

@@ -77,6 +77,28 @@ function parseDescription(desc: any): string {
 }
 
 function normalizeProperty(raw: any): PropertyData {
+  if (!raw || typeof raw !== 'object') {
+    return {
+      id: "err-" + Math.random().toString(36).slice(2, 6),
+      title: "Erro ao carregar imóvel",
+      slug: "erro",
+      price: 0,
+      priceFormatted: "R$ 0",
+      neighborhood: "São Paulo",
+      bedrooms: 0,
+      bathrooms: 0,
+      area: 0,
+      parkingSlots: 0,
+      status: "Pronto",
+      images: ["https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"],
+      url: "",
+      characteristics: [],
+      units: [],
+      type: "Apartamento"
+    } as any;
+  }
+
+  const id = raw.id ? String(raw.id) : (raw.slug ? raw.slug : "unidentified");
   const units = Array.isArray(raw.units) ? raw.units : [];
   const mainUnit = units[0] || {};
 
@@ -227,9 +249,9 @@ function normalizeProperty(raw: any): PropertyData {
     : (Array.isArray(raw.features) ? raw.features.map((f: any) => getString(f, "")) : []);
 
   return {
-    id: String(raw.id),
+    id: id,
     title: getString(raw.title || raw.name, "Imóvel Premium"),
-    slug: raw.slug || String(raw.id),
+    slug: raw.slug || id,
     description: parseDescription(raw.description),
     price: pVal,
     priceFormatted: pVal.toLocaleString("pt-BR"),
@@ -240,7 +262,7 @@ function normalizeProperty(raw: any): PropertyData {
     parkingSlots: Number(refUnit.parkingSlots ?? raw.parkingSlots ?? mainUnit.parkingSlots ?? 0),
     status,
     images: finalImages.length > 0 ? finalImages : ["https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"],
-    url: `https://www.aocubo.com/imovel/${raw.slug || raw.id}/${raw.id}`,
+    url: `https://www.aocubo.com/imovel/${raw.slug || id}/${id}`,
     developer: getString(raw.developer, ""),
     characteristics,
     units: normalizedUnits,
@@ -311,7 +333,7 @@ propertiesRouter.get("/", async (req, res) => {
 
     const data = await fetchAocubo("", params);
 
-    const rawItems = data.content || data.items || data.data || [];
+    const rawItems = (data.content || data.items || data.data || []).filter((item: any) => item && (item.id || item.slug));
     const total = data.totalElements || data.total || rawItems.length || 0;
     const currentPage = data.page ?? data.currentPage ?? page;
     const totalPages = data.totalPages || Math.ceil(total / limit) || 1;
@@ -390,8 +412,12 @@ propertiesRouter.post("/batch", async (req, res) => {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) return res.json({ properties: [] });
 
+    // Sanitize IDs
+    const cleanIds = ids.filter(id => id && String(id).trim().length > 0);
+    if (cleanIds.length === 0) return res.json({ properties: [] });
+
     // Fetch each property individually to ensure we get results even if they aren't on the first page
-    const properties = await Promise.all(ids.map(async (id: string) => {
+    const properties = await Promise.all(cleanIds.map(async (id: string) => {
       try {
         const data = await fetchAocubo(`/${id}`);
         return normalizeProperty(data);
