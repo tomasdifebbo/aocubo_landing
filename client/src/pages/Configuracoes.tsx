@@ -19,9 +19,18 @@ export default function Configuracoes() {
     const [location, setLocation] = useLocation();
     const [activeTab, setActiveTab] = useState<Tab>("perfil");
     const [loading, setLoading] = useState(false);
+
+    // Perfil
     const [fullName, setFullName] = useState("");
+
+    // Segurança
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    // Notificações
+    const [marketingEmail, setMarketingEmail] = useState(true);
+    const [priceAlerts, setPriceAlerts] = useState(true);
+    const [whatsappContact, setWhatsappContact] = useState(true);
 
     useEffect(() => {
         if (!user && !loading) {
@@ -29,6 +38,9 @@ export default function Configuracoes() {
         }
         if (user) {
             setFullName(user.user_metadata?.full_name || "");
+            setMarketingEmail(user.user_metadata?.marketing_email ?? true);
+            setPriceAlerts(user.user_metadata?.price_alerts ?? true);
+            setWhatsappContact(user.user_metadata?.whatsapp_contact ?? true);
         }
     }, [user, setLocation, loading]);
 
@@ -45,6 +57,26 @@ export default function Configuracoes() {
             toast.success("Perfil atualizado com sucesso!");
         } catch (error: any) {
             toast.error(error.message || "Erro ao atualizar perfil");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdatePreferences = async () => {
+        setLoading(true);
+        try {
+            const { error } = await supabase.auth.updateUser({
+                data: {
+                    marketing_email: marketingEmail,
+                    price_alerts: priceAlerts,
+                    whatsapp_contact: whatsappContact
+                }
+            });
+
+            if (error) throw error;
+            toast.success("Preferências atualizadas!");
+        } catch (error: any) {
+            toast.error(error.message || "Erro ao atualizar preferências");
         } finally {
             setLoading(false);
         }
@@ -205,25 +237,30 @@ export default function Configuracoes() {
                                                     <Label className="text-base font-medium">E-mails de Marketing</Label>
                                                     <p className="text-sm text-slate-500">Receba curadorias exclusivas e novos lançamentos.</p>
                                                 </div>
-                                                <Switch defaultChecked />
+                                                <Switch checked={marketingEmail} onCheckedChange={setMarketingEmail} />
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <div className="space-y-0.5">
                                                     <Label className="text-base font-medium">Alertas de Preço</Label>
                                                     <p className="text-sm text-slate-500">Notificar quando um imóvel favorito baixar de preço.</p>
                                                 </div>
-                                                <Switch defaultChecked />
+                                                <Switch checked={priceAlerts} onCheckedChange={setPriceAlerts} />
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <div className="space-y-0.5">
                                                     <Label className="text-base font-medium">WhatsApp</Label>
                                                     <p className="text-sm text-slate-500">Permitir que corretores entrem em contato via WhatsApp.</p>
                                                 </div>
-                                                <Switch defaultChecked />
+                                                <Switch checked={whatsappContact} onCheckedChange={setWhatsappContact} />
                                             </div>
 
                                             <div className="pt-4 flex justify-end">
-                                                <Button className="bg-slate-900 text-white hover:bg-slate-800 rounded-full px-8 h-11">
+                                                <Button
+                                                    onClick={handleUpdatePreferences}
+                                                    disabled={loading}
+                                                    className="bg-slate-900 text-white hover:bg-slate-800 rounded-full px-8 h-11 flex items-center gap-2"
+                                                >
+                                                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                                                     Salvar Preferências
                                                 </Button>
                                             </div>
