@@ -196,87 +196,89 @@ export default function PropertyDetails() {
             <Header />
 
             <main className="flex-1">
-                {/* Premium Image Gallery */}
-                <div className="relative h-[65vh] bg-slate-100 overflow-hidden">
-                    <div className="flex h-full gap-1 p-1 overflow-hidden">
-                        <div className="flex-[2] relative overflow-hidden group cursor-pointer" onClick={() => openLightbox(currentImageIndex)}>
-                            <AnimatePresence mode="wait">
-                                <motion.img
-                                    key={currentImageIndex}
-                                    src={displayData.images[currentImageIndex] || "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"}
-                                    alt={property.title}
-                                    initial={{ opacity: 0, scale: 1.05 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 1.2 }}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp";
-                                    }}
-                                />
-                            </AnimatePresence>
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors pointer-events-none" />
-                        </div>
-                        {/* Second Image (Tablet/Desktop) */}
-                        <div className="flex-1 hidden md:block overflow-hidden cursor-pointer" onClick={() => openLightbox(1)}>
-                            <img
-                                src={displayData.images[1] || displayData.images[0]}
-                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                alt=""
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                            />
-                        </div>
-                        {/* Third Image (Desktop) */}
-                        <div className="flex-1 hidden lg:block overflow-hidden relative cursor-pointer" onClick={() => openLightbox(2)}>
-                            <img
-                                src={displayData.images[2] || displayData.images[0]}
-                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                alt=""
-                                onError={(e) => {
-                                    (e.target as HTMLImageElement).parentElement!.style.display = 'none';
-                                }}
-                            />
+                {/* Improved Single Image Gallery (Carousel Style) */}
+                <div className="relative h-[65vh] md:h-[75vh] bg-slate-900 overflow-hidden group">
+                    <AnimatePresence mode="wait">
+                        <motion.img
+                            key={currentImageIndex}
+                            src={displayData.images[currentImageIndex] || "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"}
+                            alt={property.title}
+                            initial={{ opacity: 0, scale: 1.05 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="w-full h-full object-cover cursor-pointer transition-transform duration-10000 hover:scale-110"
+                            onClick={() => openLightbox(currentImageIndex)}
+                            onError={(e) => {
+                                (e.target as HTMLImageElement).src = "https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp";
+                            }}
+                        />
+                    </AnimatePresence>
 
-                            {/* Favorite/Share buttons on top of images */}
-                            <div className="absolute bottom-6 right-6 flex gap-3 z-10">
-                                <Button
-                                    variant="secondary"
-                                    size="icon"
-                                    className="bg-white rounded-full border-0 shadow-md h-10 w-10 hover:bg-slate-50"
-                                >
-                                    <Share2 className="w-4 h-4 text-slate-700" />
-                                </Button>
-                                <Button
-                                    variant="secondary"
-                                    size="icon"
-                                    onClick={() => toggleFavorite(property.id)}
-                                    className={`rounded-full border-0 shadow-md h-10 w-10 transition-all duration-300 ${favorite ? 'bg-red-500 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
-                                >
-                                    <Heart className={`w-4 h-4 ${favorite ? 'fill-current' : ''}`} />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Overlay Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/30 pointer-events-none" />
 
-                    <div className="absolute bottom-6 left-6 z-10 flex gap-3">
+                    {/* Navigation Controls */}
+                    <div className="absolute inset-0 flex items-center justify-between p-4 md:p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                         <Button
-                            onClick={() => openLightbox(0)}
-                            className="bg-white hover:bg-slate-50 text-slate-900 border-0 rounded-full h-11 px-6 shadow-xl gap-2 font-bold"
+                            variant="ghost"
+                            size="icon"
+                            onClick={prevImage}
+                            className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 hover:bg-white/20 pointer-events-auto transition-all"
                         >
-                            <Camera className="w-5 h-5" />
-                            Ver todas as fotos ({displayData.images.length})
+                            <ChevronLeft className="w-6 h-6 md:w-8 h-8" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={nextImage}
+                            className="h-12 w-12 md:h-16 md:w-16 rounded-full bg-black/20 backdrop-blur-md text-white border border-white/10 hover:bg-white/20 pointer-events-auto transition-all"
+                        >
+                            <ChevronRight className="w-6 h-6 md:w-8 h-8" />
                         </Button>
                     </div>
 
-                    <div className="absolute top-6 left-6 z-10">
+                    {/* Top Actions (Back and Action Buttons) */}
+                    <div className="absolute top-6 left-6 right-6 z-20 flex justify-between items-start pointer-events-none">
                         <Link href="/comprar">
-                            <Button variant="secondary" className="gap-2 shadow-sm bg-white border-0 hover:bg-slate-50 text-slate-700 rounded-full h-10 px-5 text-sm font-medium">
-                                <ChevronLeft className="w-4 h-4" />
+                            <Button variant="secondary" className="gap-2 shadow-xl bg-white/90 backdrop-blur-sm border-0 hover:bg-white text-slate-900 rounded-full h-11 px-6 text-sm font-bold pointer-events-auto transition-transform hover:scale-105 active:scale-95">
+                                <ChevronLeft className="w-5 h-5 text-amber-500" />
                                 Voltar
                             </Button>
                         </Link>
+
+                        <div className="flex gap-3 pointer-events-auto">
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                                className="bg-white/90 backdrop-blur-sm rounded-full border-0 shadow-xl h-11 w-11 hover:bg-white text-slate-900 transition-all hover:scale-105"
+                            >
+                                <Share2 className="w-5 h-5" />
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                size="icon"
+                                onClick={() => toggleFavorite(property.id)}
+                                className={`rounded-full border-0 shadow-xl h-11 w-11 transition-all duration-300 hover:scale-105 ${favorite ? 'bg-red-500 text-white' : 'bg-white/90 backdrop-blur-sm text-slate-900 hover:bg-white'}`}
+                            >
+                                <Heart className={`w-5 h-5 ${favorite ? 'fill-current' : ''}`} />
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Bottom Status/Counter */}
+                    <div className="absolute bottom-8 left-6 right-6 z-20 flex justify-between items-end pointer-events-none">
+                        <Button
+                            onClick={() => openLightbox(0)}
+                            className="bg-white/90 backdrop-blur-sm hover:bg-white text-slate-900 border-0 rounded-full h-12 px-8 shadow-2xl gap-3 font-bold pointer-events-auto transition-transform hover:scale-105 active:scale-95"
+                        >
+                            <Camera className="w-5 h-5 text-amber-500" />
+                            Ver todas ({displayData.images.length})
+                        </Button>
+
+                        <div className="bg-black/40 backdrop-blur-md px-4 py-2 rounded-full text-white text-xs font-bold tracking-widest border border-white/10">
+                            {currentImageIndex + 1} / {displayData.images.length}
+                        </div>
                     </div>
                 </div>
 
