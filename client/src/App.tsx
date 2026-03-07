@@ -43,7 +43,7 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             <ScrollToTop />
-            <Toaster />
+            <Toaster position="top-right" closeButton richColors />
             <Router />
           </TooltipProvider>
         </AuthProvider>

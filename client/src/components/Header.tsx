@@ -30,10 +30,15 @@ export default function Header() {
     }
 
     if (favorites.length === 0) {
-      toast.info("Por favor, favorite primeiro um imóvel para solicitar orçamento.", {
-        icon: <Heart className="w-4 h-4 text-red-500 fill-current" />
+      toast("Sua lista está vazia", {
+        description: "Favorite pelo menos um imóvel para solicitar um orçamento.",
+        icon: <Heart className="w-5 h-5 text-red-500 fill-current" />,
       });
-      // Optionally redirect to search page if not there
+      return;
+    }
+
+    if (favsData.length === 0) {
+      toast.loading("Resgatando informações dos seus favoritos...");
       return;
     }
 
