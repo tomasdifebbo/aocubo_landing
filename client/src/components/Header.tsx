@@ -37,15 +37,13 @@ export default function Header() {
       return;
     }
 
-    if (favsData.length === 0) {
-      toast.loading("Resgatando informações dos seus favoritos...");
-      return;
-    }
-
-    // Send favorites via WhatsApp
     const phoneNumber = "5511995137769";
-    const links = favsData.map(f => `• ${f.title}\n  https://adjsimoveis.vercel.app/imovel/${f.slug}/${f.id}`).join("\n\n");
-    const message = `Olá! Tenho interesse nos seguintes imóveis favoritos:\n\n${links}`;
+    // Generate message: prioritize full links if data is ready, fallback to count if still loading
+    const links = favsData.length > 0
+      ? favsData.map(f => `• ${f.title}\n  https://adjsimoveis.vercel.app/imovel/${f.slug}/${f.id}`).join("\n\n")
+      : `Tenho ${favorites.length} interesse em imóveis salvos nos meus favoritos.`;
+
+    const message = `Olá! ${links}`;
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
