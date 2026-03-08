@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useProperty } from "@/hooks/useProperty";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useFavoritesData } from "@/hooks/useFavoritesData";
@@ -37,6 +37,7 @@ export default function PropertyDetails() {
     const { data: property, loading, error } = useProperty(slug);
     const { toggleFavorite, isFavorite } = useFavorites();
     const { data: favsData } = useFavoritesData();
+    const [location, setLocation] = useLocation();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // State to track selected unit for dynamic updates
@@ -240,12 +241,20 @@ export default function PropertyDetails() {
 
                     {/* Top Actions (Back and Action Buttons) */}
                     <div className="absolute top-6 left-6 right-6 z-20 flex justify-between items-start pointer-events-none">
-                        <Link href="/comprar">
-                            <Button variant="secondary" className="gap-2 shadow-xl bg-white/90 backdrop-blur-sm border-0 hover:bg-white text-slate-900 rounded-full h-11 px-6 text-sm font-bold pointer-events-auto transition-transform hover:scale-105 active:scale-95">
-                                <ChevronLeft className="w-5 h-5 text-amber-500" />
-                                Voltar
-                            </Button>
-                        </Link>
+                        <Button
+                            variant="secondary"
+                            onClick={() => {
+                                if (window.history.length > 1) {
+                                    window.history.back();
+                                } else {
+                                    setLocation("/comprar");
+                                }
+                            }}
+                            className="gap-2 shadow-xl bg-white/90 backdrop-blur-sm border-0 hover:bg-white text-slate-900 rounded-full h-11 px-6 text-sm font-bold pointer-events-auto transition-transform hover:scale-105 active:scale-95"
+                        >
+                            <ChevronLeft className="w-5 h-5 text-amber-500" />
+                            Voltar
+                        </Button>
 
                         <div className="flex gap-3 pointer-events-auto">
                             <Button

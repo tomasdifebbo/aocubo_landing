@@ -9,17 +9,41 @@ import { Search, FilterX } from "lucide-react";
 
 export default function Comprar() {
     const [page, setPage] = useState(1);
+    // Read initial filters from URL on mount
+    const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+    const [inputNeighborhood, setInputNeighborhood] = useState(searchParams.get("bairro") || "");
+    const [inputBedrooms, setInputBedrooms] = useState<string>(searchParams.get("quartos") || "0");
+    const [inputMaxPrice, setInputMaxPrice] = useState<string>(searchParams.get("preco") || "0");
+    const [inputStatus, setInputStatus] = useState<string>(searchParams.get("status") || "all");
+
     const [filters, setFilters] = useState<{
         neighborhood?: string;
         bedrooms?: number;
         maxPrice?: number;
         status?: string;
-    }>({});
+    }>({
+        neighborhood: searchParams.get("bairro") || undefined,
+        bedrooms: searchParams.get("quartos") && searchParams.get("quartos") !== "0" ? parseInt(searchParams.get("quartos")!) : undefined,
+        maxPrice: searchParams.get("preco") && searchParams.get("preco") !== "0" ? parseInt(searchParams.get("preco")!) : undefined,
+        status: searchParams.get("status") && searchParams.get("status") !== "all" ? searchParams.get("status") || undefined : undefined,
+    });
 
-    const [inputNeighborhood, setInputNeighborhood] = useState("");
-    const [inputBedrooms, setInputBedrooms] = useState<string>("0");
-    const [inputMaxPrice, setInputMaxPrice] = useState<string>("0");
-    const [inputStatus, setInputStatus] = useState<string>("all");
+    // Sync state with URL params
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (inputNeighborhood) params.set("bairro", inputNeighborhood);
+        if (inputBedrooms !== "0") params.set("quartos", inputBedrooms);
+        if (inputMaxPrice !== "0") params.set("preco", inputMaxPrice);
+        if (inputStatus !== "all") params.set("status", inputStatus);
+
+        const queryString = params.toString();
+        const path = queryString ? `/comprar?${queryString}` : "/comprar";
+
+        // Use replaceState to keep history clean and avoid spamming with debounced updates
+        if (typeof window !== "undefined" && window.location.search !== (queryString ? `?${queryString}` : "")) {
+            window.history.replaceState({}, "", path);
+        }
+    }, [inputNeighborhood, inputBedrooms, inputMaxPrice, inputStatus]);
 
     // Reset page when filters change
     const applyFilters = (shouldScroll = false) => {
@@ -52,6 +76,10 @@ export default function Comprar() {
         setInputStatus("all");
         setPage(1);
         setFilters({});
+        // Clear URL
+        if (typeof window !== "undefined") {
+            window.history.replaceState({}, "", "/comprar");
+        }
     };
 
     return (
