@@ -47,12 +47,18 @@ export default function Header() {
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, "_blank");
   };
 
+  const clearSearch = () => {
+    localStorage.removeItem("adjs_last_filters");
+    // If we're already on the home page, we might need a refresh or state sync, 
+    // but wouter navigation will handle the route change.
+  };
+
   const toggleMode = () => setAuthModalMode(authModal.mode === "login" ? "register" : "login");
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-border">
       <div className="container flex items-center justify-between h-16 md:h-20">
         {/* Logo */}
-        <Link href="/">
+        <Link href="/" onClick={clearSearch}>
           <div className="flex items-center gap-3 cursor-pointer">
             <img src="/adjs-logo.jpg" alt="ADJ'S Imóveis" className="h-12 md:h-14 w-auto drop-shadow-sm" />
           </div>
@@ -60,7 +66,7 @@ export default function Header() {
 
         {/* Navigation Links */}
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/">
+          <Link href="/" onClick={clearSearch}>
             <span className="text-sm text-foreground hover:text-primary transition-colors cursor-pointer">
               Início
             </span>
@@ -129,7 +135,7 @@ export default function Header() {
             <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-0 flex flex-col bg-white">
               {/* Header with Logo */}
               <div className="p-6 border-b border-slate-50">
-                <Link href="/">
+                <Link href="/" onClick={clearSearch}>
                   <div className="flex items-center gap-3 cursor-pointer">
                     <img src="/adjs-logo.jpg" alt="ADJ'S Imóveis" className="h-10 w-auto" />
                     <SheetTitle className="text-lg font-serif italic text-slate-900 leading-tight">ADJ's Imóveis</SheetTitle>
@@ -142,7 +148,7 @@ export default function Header() {
                 <div className="px-4">
                   <p className="px-4 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Navegação</p>
                   <nav className="flex flex-col gap-1">
-                    <Link href="/">
+                    <Link href="/" onClick={clearSearch}>
                       <div className="flex items-center gap-4 px-4 py-2.5 rounded-2xl hover:bg-slate-50 transition-all group cursor-pointer">
                         <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-md transition-all">
                           <Home className="w-4 h-4 text-slate-600 group-hover:text-primary" />
