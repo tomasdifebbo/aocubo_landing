@@ -9,12 +9,28 @@ import { Search, FilterX } from "lucide-react";
 
 export default function Comprar() {
     const [page, setPage] = useState(1);
-    // Read initial filters from URL on mount
-    const searchParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
-    const [inputNeighborhood, setInputNeighborhood] = useState(searchParams.get("bairro") || "");
-    const [inputBedrooms, setInputBedrooms] = useState<string>(searchParams.get("quartos") || "0");
-    const [inputMaxPrice, setInputMaxPrice] = useState<string>(searchParams.get("preco") || "0");
-    const [inputStatus, setInputStatus] = useState<string>(searchParams.get("status") || "all");
+    // Read initial filters from URL OR localStorage
+    const getInitialFilters = () => {
+        if (typeof window === "undefined") return { neighborhood: "", bedrooms: "0", maxPrice: "0", status: "all" };
+        const searchParams = new URLSearchParams(window.location.search);
+
+        // Priority: 1. URL params, 2. localStorage, 3. Default
+        const stored = localStorage.getItem("adjs_last_filters");
+        const lastFilters = stored ? JSON.parse(stored) : {};
+
+        return {
+            neighborhood: searchParams.get("bairro") || lastFilters.neighborhood || "",
+            bedrooms: searchParams.get("quartos") || lastFilters.bedrooms || "0",
+            maxPrice: searchParams.get("preco") || lastFilters.maxPrice || "0",
+            status: searchParams.get("status") || lastFilters.status || "all",
+        };
+    };
+
+    const initial = getInitialFilters();
+    const [inputNeighborhood, setInputNeighborhood] = useState(initial.neighborhood);
+    const [inputBedrooms, setInputBedrooms] = useState<string>(initial.bedrooms);
+    const [inputMaxPrice, setInputMaxPrice] = useState<string>(initial.maxPrice);
+    const [inputStatus, setInputStatus] = useState<string>(initial.status);
 
     const [filters, setFilters] = useState<{
         neighborhood?: string;
@@ -22,26 +38,44 @@ export default function Comprar() {
         maxPrice?: number;
         status?: string;
     }>({
-        neighborhood: searchParams.get("bairro") || undefined,
-        bedrooms: searchParams.get("quartos") && searchParams.get("quartos") !== "0" ? parseInt(searchParams.get("quartos")!) : undefined,
-        maxPrice: searchParams.get("preco") && searchParams.get("preco") !== "0" ? parseInt(searchParams.get("preco")!) : undefined,
-        status: searchParams.get("status") && searchParams.get("status") !== "all" ? searchParams.get("status") || undefined : undefined,
+        neighborhood: initial.neighborhood || undefined,
+        bedrooms: initial.bedrooms !== "0" ? parseInt(initial.bedrooms) : undefined,
+        maxPrice: initial.maxPrice !== "0" ? parseInt(initial.maxPrice) : undefined,
+        status: initial.status === "all" ? undefined : initial.status,
     });
 
-    // Sync state with URL params
+    // Sync state with URL params AND localStorage
     useEffect(() => {
         const params = new URLSearchParams();
-        if (inputNeighborhood) params.set("bairro", inputNeighborhood);
-        if (inputBedrooms !== "0") params.set("quartos", inputBedrooms);
-        if (inputMaxPrice !== "0") params.set("preco", inputMaxPrice);
-        if (inputStatus !== "all") params.set("status", inputStatus);
+        const storageObj: any = {};
+
+        if (inputNeighborhood) {
+            params.set("bairro", inputNeighborhood);
+            storageObj.neighborhood = inputNeighborhood;
+        }
+        if (inputBedrooms !== "0") {
+            params.set("quartos", inputBedrooms);
+            storageObj.bedrooms = inputBedrooms;
+        }
+        if (inputMaxPrice !== "0") {
+            params.set("preco", inputMaxPrice);
+            storageObj.maxPrice = inputMaxPrice;
+        }
+        if (inputStatus !== "all") {
+            params.set("status", inputStatus);
+            storageObj.status = inputStatus;
+        }
 
         const queryString = params.toString();
         const path = queryString ? `/comprar?${queryString}` : "/comprar";
 
-        // Use replaceState to keep history clean and avoid spamming with debounced updates
-        if (typeof window !== "undefined" && window.location.search !== (queryString ? `?${queryString}` : "")) {
-            window.history.replaceState({}, "", path);
+        if (typeof window !== "undefined") {
+            // Update URL
+            if (window.location.search !== (queryString ? `?${queryString}` : "")) {
+                window.history.replaceState({}, "", path);
+            }
+            // Update Storage
+            localStorage.setItem("adjs_last_filters", JSON.stringify(storageObj));
         }
     }, [inputNeighborhood, inputBedrooms, inputMaxPrice, inputStatus]);
 
@@ -76,9 +110,9 @@ export default function Comprar() {
         setInputStatus("all");
         setPage(1);
         setFilters({});
-        // Clear URL
         if (typeof window !== "undefined") {
             window.history.replaceState({}, "", "/comprar");
+            localStorage.removeItem("adjs_last_filters");
         }
     };
 
@@ -152,16 +186,16 @@ export default function Comprar() {
                                 </div>
 
                                 <div className="col-span-2 lg:col-span-1">
-                                    <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Status</label>
+                                    <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Fase</label>
                                     <Select value={inputStatus} onValueChange={setInputStatus}>
                                         <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
                                             <SelectValue placeholder="Todos" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
                                             <SelectItem value="all" className="cursor-pointer">Todos</SelectItem>
-                                            <SelectItem value="Pronto" className="cursor-pointer">Pronto</SelectItem>
-                                            <SelectItem value="Em obras" className="cursor-pointer">Obras</SelectItem>
-                                            <SelectItem value="Breve lançamento" className="cursor-pointer">Lança.</SelectItem>
+                                            <SelectItem value="Pronto" className="cursor-pointer">Pronto para Morar</SelectItem>
+                                            <SelectItem value="Em obras" className="cursor-pointer">Em Construção</SelectItem>
+                                            <SelectItem value="Breve lançamento" className="cursor-pointer">Na Planta / Lançamento</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
