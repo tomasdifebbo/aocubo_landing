@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Link } from "wouter";
 
 interface HeroProps {
   onSearch: (filters: {
@@ -12,10 +13,24 @@ interface HeroProps {
 }
 
 export default function Hero({ onSearch }: HeroProps) {
-  const [neighborhood, setNeighborhood] = useState("");
-  const [bedrooms, setBedrooms] = useState<string>("0");
-  const [maxPrice, setMaxPrice] = useState<string>("0");
-  const [status, setStatus] = useState<string>("all");
+  // Persistence logic from localStorage
+  const getInitialFilters = () => {
+    if (typeof window === "undefined") return { neighborhood: "", bedrooms: "0", maxPrice: "0", status: "all" };
+    const stored = localStorage.getItem("adjs_last_filters");
+    const lastFilters = stored ? JSON.parse(stored) : {};
+    return {
+      neighborhood: lastFilters.neighborhood || "",
+      bedrooms: lastFilters.bedrooms || "0",
+      maxPrice: lastFilters.maxPrice || "0",
+      status: lastFilters.status || "all",
+    };
+  };
+
+  const initial = getInitialFilters();
+  const [neighborhood, setNeighborhood] = useState(initial.neighborhood);
+  const [bedrooms, setBedrooms] = useState<string>(initial.bedrooms);
+  const [maxPrice, setMaxPrice] = useState<string>(initial.maxPrice);
+  const [status, setStatus] = useState<string>(initial.status);
 
   const handleSearch = () => {
     onSearch({
@@ -25,6 +40,18 @@ export default function Hero({ onSearch }: HeroProps) {
       status: status === "all" ? undefined : status,
     });
   };
+
+  // Sync with localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storageObj = {
+      neighborhood,
+      bedrooms,
+      maxPrice,
+      status
+    };
+    localStorage.setItem("adjs_last_filters", JSON.stringify(storageObj));
+  }, [neighborhood, bedrooms, maxPrice, status]);
 
   // Auto-apply filters with debounce
   useEffect(() => {
@@ -101,19 +128,28 @@ export default function Hero({ onSearch }: HeroProps) {
             </div>
 
             <div className="col-span-2 lg:col-span-1">
-              <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Status</label>
+              <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Fase</label>
               <Select value={status} onValueChange={setStatus}>
                 <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
                   <SelectItem value="all" className="cursor-pointer">Todos</SelectItem>
-                  <SelectItem value="Pronto" className="cursor-pointer">Pronto</SelectItem>
-                  <SelectItem value="Em obras" className="cursor-pointer">Obras</SelectItem>
-                  <SelectItem value="Breve lançamento" className="cursor-pointer">Lança.</SelectItem>
+                  <SelectItem value="Pronto" className="cursor-pointer">Pronto para Morar</SelectItem>
+                  <SelectItem value="Em obras" className="cursor-pointer">Em Construção</SelectItem>
+                  <SelectItem value="Breve lançamento" className="cursor-pointer">Na Planta / Lançamento</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="mt-8 flex justify-center lg:justify-end">
+            <Link
+              href="/comprar"
+              className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest px-8 py-4 rounded-full border border-white/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            >
+              Explorar lista completa
+            </Link>
           </div>
         </div>
       </div>
