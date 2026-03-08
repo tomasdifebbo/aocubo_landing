@@ -34,7 +34,7 @@ export default function Hero({ onSearch }: HeroProps) {
 
   const handleSearch = () => {
     onSearch({
-      neighborhood: neighborhood || undefined,
+      neighborhood: neighborhood.trim() || undefined,
       bedrooms: bedrooms !== "0" ? parseInt(bedrooms) : undefined,
       maxPrice: maxPrice !== "0" ? parseInt(maxPrice) : undefined,
       status: status === "all" ? undefined : status,
@@ -45,7 +45,7 @@ export default function Hero({ onSearch }: HeroProps) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const storageObj = {
-      neighborhood,
+      neighborhood: neighborhood.trim(), // Keep it clean for restoration
       bedrooms,
       maxPrice,
       status
@@ -57,7 +57,7 @@ export default function Hero({ onSearch }: HeroProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       handleSearch();
-    }, 600);
+    }, 400); // 400ms for snappier feel
     return () => clearTimeout(timer);
   }, [neighborhood, bedrooms, maxPrice, status]);
 

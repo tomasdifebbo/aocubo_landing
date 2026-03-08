@@ -83,7 +83,7 @@ export default function Comprar() {
     const applyFilters = (shouldScroll = false) => {
         setPage(1);
         setFilters({
-            neighborhood: inputNeighborhood || undefined,
+            neighborhood: inputNeighborhood.trim() || undefined,
             bedrooms: inputBedrooms !== "0" ? parseInt(inputBedrooms) : undefined,
             maxPrice: inputMaxPrice !== "0" ? parseInt(inputMaxPrice) : undefined,
             status: inputStatus === "all" ? undefined : inputStatus,
@@ -99,7 +99,7 @@ export default function Comprar() {
     useEffect(() => {
         const timer = setTimeout(() => {
             applyFilters();
-        }, 600); // 600ms debounce
+        }, 400); // More responsive 400ms debounce
         return () => clearTimeout(timer);
     }, [inputNeighborhood, inputBedrooms, inputMaxPrice, inputStatus]);
 

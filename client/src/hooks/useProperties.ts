@@ -71,6 +71,7 @@ export function useProperties(options: UsePropertiesOptions = {}): UseProperties
         async function load() {
             setLoading(true);
             setError(null);
+            setData(null);
 
             const params = new URLSearchParams();
             params.set("page", String(page));

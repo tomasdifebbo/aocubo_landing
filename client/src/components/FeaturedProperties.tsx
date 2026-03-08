@@ -262,6 +262,8 @@ export default function FeaturedProperties({ filters = {}, onPageChange }: Featu
 
   // Append new data to allProperties
   useEffect(() => {
+    if (loading) return; // Prevent using stale data while a new fetch is starting
+
     if (data?.properties) {
       if (innerPage === 1) {
         setAllProperties(data.properties);
@@ -273,7 +275,7 @@ export default function FeaturedProperties({ filters = {}, onPageChange }: Featu
         });
       }
     }
-  }, [data, innerPage]);
+  }, [data, innerPage, loading]);
 
   // Infinite Scroll Observer
   useEffect(() => {
