@@ -306,7 +306,6 @@ export async function getPropertyBySlug(slug: string): Promise<Property> {
 
     const response = await fetch(url, {
         headers: {
-            "Authorization": "Bearer undefined",
             "Accept": "application/json",
             "User-Agent": "Mozilla/5.0 (compatible; ADJSImoveisLanding/1.0)",
         },
@@ -340,7 +339,6 @@ export async function getPropertyById(id: string): Promise<Property> {
 
     const response = await fetch(url, {
         headers: {
-            "Authorization": "Bearer undefined",
             "Accept": "application/json",
             "User-Agent": "Mozilla/5.0 (compatible; ADJSImoveisLanding/1.0)",
         },
@@ -358,8 +356,8 @@ export async function getPropertyById(id: string): Promise<Property> {
         const searchUrl = `${AOCUBO_API_BASE}?${params.toString()}`;
         const searchResp = await fetch(searchUrl, {
             headers: {
-                "Authorization": "Bearer undefined",
                 "Accept": "application/json",
+                "User-Agent": "Mozilla/5.0 (compatible; ADJSImoveisLanding/1.0)",
             }
         });
         if (!searchResp.ok) throw new Error("Property not found");

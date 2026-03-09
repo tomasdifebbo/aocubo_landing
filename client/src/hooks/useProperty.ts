@@ -15,9 +15,17 @@ export function useProperty(slug: string | undefined, id: string | undefined) {
             setLoading(true);
             setError(null);
             try {
-                // Try fetching by ID first if available as it's more precise
-                const endpoint = id ? `/api/properties/i/${id}` : `/api/properties/s/${slug}`;
-                const res = await fetch(endpoint);
+                let res = null;
+
+                // 1. Try fetching by ID first if available
+                if (id) {
+                    res = await fetch(`/api/properties/i/${id}`);
+                }
+
+                // 2. Fallback to slug if ID's not available OR if it failed
+                if (!res || !res.ok) {
+                    res = await fetch(`/api/properties/s/${slug}`);
+                }
 
                 if (!res.ok) throw new Error("Imóvel não encontrado");
                 const json = await res.json();
