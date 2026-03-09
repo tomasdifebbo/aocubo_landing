@@ -22,6 +22,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/comprar"} component={Comprar} />
       <Route path={"/favoritos"} component={Favoritos} />
+      <Route path={"/imovel/:slug/:id"} component={PropertyDetails} />
       <Route path={"/imovel/:slug"} component={PropertyDetails} />
       <Route path={"/sobre"} component={Sobre} />
       <Route path={"/privacidade"} component={Legal} />

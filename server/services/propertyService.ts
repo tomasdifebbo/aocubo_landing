@@ -126,9 +126,19 @@ function normalise(raw: RawProperty): Property {
         }
 
         // Ensure it's an absolute URL
-        if (url.startsWith("http")) return url;
-        if (url.startsWith("//")) return `https:${url}`;
-        if (url.startsWith("/")) return `https://5m7fnp.stackhero-network.com${url}`;
+        let finalUrl = null;
+        if (url.startsWith("http")) finalUrl = url;
+        else if (url.startsWith("//")) finalUrl = `https:${url}`;
+        else if (url.startsWith("/")) finalUrl = `https://5m7fnp.stackhero-network.com${url}`;
+
+        if (finalUrl) {
+            // Fix iOS/Chrome issues with encoded URLs by normalizing slashes
+            try {
+                return decodeURIComponent(finalUrl).replace(/%2F/g, '/');
+            } catch (e) {
+                return finalUrl.replace(/%2F/g, '/');
+            }
+        }
 
         return null;
     };

@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import type { PropertyData } from "./useProperties";
 
-export function useProperty(slug: string | undefined) {
+export function useProperty(slug: string | undefined, id: string | undefined) {
     const [data, setData] = useState<PropertyData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!slug) return;
+        if (!slug && !id) return;
 
         let cancelled = false;
 
@@ -15,7 +15,10 @@ export function useProperty(slug: string | undefined) {
             setLoading(true);
             setError(null);
             try {
-                const res = await fetch(`/api/properties/s/${slug}`);
+                // Try fetching by ID first if available as it's more precise
+                const endpoint = id ? `/api/properties/i/${id}` : `/api/properties/s/${slug}`;
+                const res = await fetch(endpoint);
+
                 if (!res.ok) throw new Error("Imóvel não encontrado");
                 const json = await res.json();
                 if (!cancelled) setData(json);
@@ -28,7 +31,7 @@ export function useProperty(slug: string | undefined) {
 
         load();
         return () => { cancelled = true; };
-    }, [slug]);
+    }, [slug, id]);
 
     return { data, loading, error };
 }

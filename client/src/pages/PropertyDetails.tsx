@@ -33,8 +33,8 @@ import {
 } from "lucide-react";
 
 export default function PropertyDetails() {
-    const { slug } = useParams();
-    const { data: property, loading, error } = useProperty(slug);
+    const { slug, id } = useParams();
+    const { data: property, loading, error } = useProperty(slug, id);
     const { toggleFavorite, isFavorite } = useFavorites();
     const { data: favsData } = useFavoritesData();
     const [location, setLocation] = useLocation();
