@@ -161,7 +161,7 @@ export function PropertyCard({ property, index, showFavorite = true, showRemove 
           </button>
         )}
 
-        <Link href={`/imovel/${property.slug}`}>
+        <Link href={`/imovel/${property.slug}/${property.id}`}>
           <div className="cursor-pointer">
             <div className="relative h-64 md:h-72 overflow-hidden bg-slate-50">
               <ImageCycler images={property.images} title={property.title} isHovering={isHovered} />
