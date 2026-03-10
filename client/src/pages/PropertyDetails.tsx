@@ -79,8 +79,9 @@ export default function PropertyDetails() {
             });
 
             const phoneNumber = "5511995137769";
+            const currentUrl = window.location.href;
             const baseMessage = formData.message;
-            const fullMessage = `Nome: ${formData.name}\nTelefone: ${formData.phone}\nE-mail: ${formData.email}\n\nMensagem: ${baseMessage}`;
+            const fullMessage = `Nome: ${formData.name}\nTelefone: ${formData.phone}\nE-mail: ${formData.email}\n\nMensagem: ${baseMessage}\n\nLink do Imóvel: ${currentUrl}`;
 
             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(fullMessage)}`;
 
@@ -260,6 +261,7 @@ export default function PropertyDetails() {
                             <Button
                                 variant="secondary"
                                 size="icon"
+                                onClick={handleShare}
                                 className="bg-white/90 backdrop-blur-sm rounded-full border-0 shadow-xl h-11 w-11 hover:bg-white text-slate-900 transition-all hover:scale-105"
                             >
                                 <Share2 className="w-5 h-5" />

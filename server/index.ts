@@ -24,6 +24,12 @@ async function startServer() {
   // ─── API Routes ──────────────────────────────────────────────────────────
   app.use("/api/properties", propertiesRouter);
 
+  app.post("/api/contact", (req, res) => {
+    console.log("[Contact API] Received lead:", req.body);
+    // Here we could integrate with an email service or CRM
+    res.status(200).json({ success: true, message: "Contato recebido com sucesso." });
+  });
+
   // ─── Static / SPA ────────────────────────────────────────────────────────
   const staticPath =
     process.env.NODE_ENV === "production"

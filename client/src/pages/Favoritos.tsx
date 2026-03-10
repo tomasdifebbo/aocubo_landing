@@ -17,6 +17,20 @@ export default function Favoritos() {
         setData(prev => prev.filter(p => p.id !== id));
     };
 
+    const handleSendToBroker = () => {
+        const phoneNumber = "5511995137769";
+        const baseUrl = window.location.origin;
+
+        const propertyLinks = properties.map(p => {
+            return `• ${p.title}\nLink: ${baseUrl}/imovel/${p.slug}/${p.id}`;
+        }).join('\n\n');
+
+        const message = `Olá! Tenho interesse nesses imóveis dos meus favoritos:\n\n${propertyLinks}`;
+        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, "_blank");
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-slate-50">
             <Header />
@@ -70,6 +84,25 @@ export default function Favoritos() {
                                     onRemove={() => handleRemove(property.id)}
                                 />
                             ))}
+                        </div>
+                    )}
+
+                    {favorites.length > 0 && !loading && (
+                        <div className="mt-16 flex flex-col items-center bg-white p-8 md:p-12 rounded-[2.5rem] shadow-xl border border-slate-100 max-w-4xl mx-auto">
+                            <h3 className="text-2xl font-normal text-slate-900 mb-4 text-center">Gostou da sua seleção?</h3>
+                            <p className="text-slate-600 mb-8 text-center max-w-md">
+                                Envie sua lista de favoritos para nosso especialista e receba um atendimento personalizado para cada um deles.
+                            </p>
+                            <Button
+                                onClick={handleSendToBroker}
+                                size="lg"
+                                className="bg-[#25D366] hover:bg-[#128C7E] text-white rounded-full px-12 h-16 text-lg font-bold shadow-xl transition-all hover:scale-105 active:scale-95 gap-3"
+                            >
+                                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.224-3.82c1.516.903 3.136 1.379 4.79 1.38h.005c5.305 0 9.623-4.317 9.626-9.626.001-2.571-1.003-4.987-2.83-6.813-1.826-1.828-4.241-2.831-6.813-2.831-5.307 0-9.624 4.318-9.626 9.628-.001 1.705.449 3.371 1.3 4.825l-.999 3.646 3.747-.981zm11.387-5.464c-.301-.15-1.779-.878-2.053-.978-.275-.099-.475-.15-.675.15-.199.3-.775 1.05-.951 1.274-.175.225-.351.225-.651.15-.3-.15-1.271-.47-2.422-1.492" />
+                                </svg>
+                                Enviar para o Corretor
+                            </Button>
                         </div>
                     )}
                 </div>
