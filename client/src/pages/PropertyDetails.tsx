@@ -60,6 +60,30 @@ export default function PropertyDetails() {
         }
     }, [property]);
 
+    const handleShare = async () => {
+        const shareData = {
+            title: property?.title || "Imóvel ADJ'S",
+            text: `Confira este imóvel: ${property?.title}`,
+            url: window.location.href,
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.error("Error sharing:", err);
+            }
+        } else {
+            // Fallback: Copy to clipboard
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                toast.success("Link copiado para a área de transferência!");
+            } catch (err) {
+                console.error("Error copying link:", err);
+            }
+        }
+    };
+
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -506,7 +530,7 @@ export default function PropertyDetails() {
                                                 </div>
                                                 <div>
                                                     <p className="font-bold text-slate-900 text-sm">Consultoria ADJ'S Imóveis</p>
-                                                    <p className="text-[10px] text-slate-600 font-medium">Registro CRECI 212875-F</p>
+                                                    <p className="text-[10px] text-slate-600 font-medium">Registro CRECI 282175-F</p>
                                                 </div>
                                             </div>
                                         </div>

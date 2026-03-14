@@ -114,13 +114,31 @@ function normalise(raw: RawProperty): Property {
 
     const extractUrl = (a: any) => {
         if (!a) return null;
-        let url = typeof a === "string" ? a : a.url;
+        let url = typeof a === "string" ? a : (a.url || a.originalUrl);
         if (typeof url !== "string") return null;
 
+        // AoCubo High Quality Trick: 
+        // Removing .webp from .jpg.webp often returns a higher bitrate/cleaner original.
+        if (url.toLowerCase().endsWith(".jpg.webp")) {
+            url = url.substring(0, url.length - 5);
+        } else if (url.toLowerCase().endsWith(".png.webp")) {
+            url = url.substring(0, url.length - 5);
+        }
+
         // Ensure it's an absolute URL
-        if (url.startsWith("http")) return url;
-        if (url.startsWith("//")) return `https:${url}`;
-        if (url.startsWith("/")) return `https://5m7fnp.stackhero-network.com${url}`;
+        let finalUrl = null;
+        if (url.startsWith("http")) finalUrl = url;
+        else if (url.startsWith("//")) finalUrl = `https:${url}`;
+        else if (url.startsWith("/")) finalUrl = `https://5m7fnp.stackhero-network.com${url}`;
+
+        if (finalUrl) {
+            // Fix iOS/Chrome issues with encoded URLs by normalizing slashes
+            try {
+                return decodeURIComponent(finalUrl).replace(/%2F/g, '/');
+            } catch (e) {
+                return finalUrl.replace(/%2F/g, '/');
+            }
+        }
 
         return null;
     };
@@ -136,16 +154,7 @@ function normalise(raw: RawProperty): Property {
 
         let url = extractUrl(a);
         if (url) {
-            // Some URLs might be double-encoded or have special characters
-            try {
-                // If it contains %2F but not as a protocol separator, it might need decoding
-                // but usually, we should keep it encoded for the browser.
-                // However, let's at least ensure no spaces are present.
-                url = url.trim().replace(/\s/g, '%20');
-                imagePaths.add(url);
-            } catch (e) {
-                imagePaths.add(url);
-            }
+            imagePaths.add(url);
         }
     });
 

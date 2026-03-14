@@ -96,7 +96,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <div className="text-center text-sm text-white/70">
-            <p>&copy; 2026 ADJ'S Imóveis. Todos os direitos reservados. CRECI-SP 212875-F</p>
+            <p>&copy; 2026 ADJ'S Imóveis. Todos os direitos reservados. CRECI-SP 282175-F</p>
           </div>
         </div>
       </div>
