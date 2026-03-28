@@ -22,6 +22,7 @@ export interface PropertyData {
   characteristics: string[];
   units: any[];
   type: string;
+  maxBedrooms: number;
   address?: string;
 }
 
@@ -31,6 +32,42 @@ const AOCUBO_API_BASE = "https://api.aocubo.com/api/v1/aocubo/properties";
 // ─── CACHE ────────────────────────────────────────────────────────────────
 const cache = new Map<string, { data: any, timestamp: number }>();
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const nameBedroomCache = new Map<string, { max: number, timestamp: number }>();
+
+async function getAggregatedMaxBedrooms(name: string): Promise<number> {
+  if (!name || name === "Imóvel Premium") return 0;
+  
+  const cached = nameBedroomCache.get(name);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+    return cached.max;
+  }
+
+  try {
+    const url = new URL(AOCUBO_API_BASE);
+    url.searchParams.set("search[property.name][value]", name);
+    url.searchParams.set("search[property.name][type]", "EQUAL");
+    url.searchParams.set("size", "20");
+
+    const res = await fetch(url.toString(), {
+      headers: { "Accept": "application/json", "X-Platform": "web" }
+    });
+    if (!res.ok) return 0;
+    
+    const data = await res.json();
+    const items = data.content || [];
+    const counts = items.flatMap((item: any) => [
+      ...(item.units || []).map((u: any) => Number(u.bedrooms)),
+      Number(item.bedrooms)
+    ]).filter((n: any) => !isNaN(n));
+
+    const max = counts.length > 0 ? Math.max(0, ...counts) : 0;
+    nameBedroomCache.set(name, { max, timestamp: Date.now() });
+    return max;
+  } catch (err) {
+    console.error(`Error aggregating for ${name}:`, err);
+    return 0;
+  }
+}
 
 async function fetchAocubo(endpoint: string, params: Record<string, string | number> = {}) {
   const url = new URL(`${AOCUBO_API_BASE}${endpoint}`);
@@ -76,7 +113,7 @@ function parseDescription(desc: any): string {
   return desc;
 }
 
-function normalizeProperty(raw: any): PropertyData {
+function normalizeProperty(raw: any, aggregatedMax?: number): PropertyData {
   if (!raw || typeof raw !== 'object') {
     return {
       id: "err-" + Math.random().toString(36).slice(2, 6),
@@ -94,6 +131,7 @@ function normalizeProperty(raw: any): PropertyData {
       url: "",
       characteristics: [],
       units: [],
+      maxBedrooms: 0,
       type: "Apartamento"
     } as any;
   }
@@ -257,6 +295,13 @@ function normalizeProperty(raw: any): PropertyData {
     priceFormatted: pVal.toLocaleString("pt-BR"),
     neighborhood: getString(raw.neighborhood || raw.address?.neighborhood, "São Paulo"),
     bedrooms: Number(refUnit.bedrooms ?? raw.bedrooms ?? mainUnit.bedrooms ?? 0),
+    maxBedrooms: (() => {
+      const counts = [
+        ...normalizedUnits.map((u: any) => Number(u.bedrooms)),
+        Number(raw.bedrooms)
+      ].filter(n => !isNaN(n));
+      return counts.length > 0 ? Math.max(0, ...counts) : 0;
+    })(),
     bathrooms: Number(refUnit.bathrooms ?? raw.bathrooms ?? mainUnit.bathrooms ?? 0),
     area: Number(refUnit.livingArea ?? raw.area ?? mainUnit.livingArea ?? 0),
     parkingSlots: Number(refUnit.parkingSlots ?? raw.parkingSlots ?? mainUnit.parkingSlots ?? 0),
@@ -340,12 +385,15 @@ propertiesRouter.get("/", async (req, res) => {
 
     // Fetch full details for items with missing price/area OR too few images for cycling
     const properties = await Promise.all(rawItems.map(async (raw: any) => {
-      let normalized = normalizeProperty(raw);
+      const name = raw.name || raw.title;
+      const aggregatedMax = await getAggregatedMaxBedrooms(name);
+
+      let normalized = normalizeProperty(raw, aggregatedMax);
       // Only trigger full fetch if data is incomplete or if we have very few images (less than 3)
       if (normalized.price === 0 || normalized.area === 0 || normalized.images.length < 3) {
         try {
           const fullData = await fetchAocubo(`/${raw.id}`);
-          return normalizeProperty(fullData);
+          return normalizeProperty(fullData, aggregatedMax);
         } catch {
           return normalized;
         }
@@ -401,7 +449,9 @@ propertiesRouter.get("/s/:slug", async (req, res) => {
 propertiesRouter.get("/:slug", async (req, res) => {
   try {
     const data = await fetchAocubo(`/${req.params.slug}`);
-    res.json(normalizeProperty(data));
+    const name = data.name || data.title;
+    const aggregatedMax = await getAggregatedMaxBedrooms(name);
+    res.json(normalizeProperty(data, aggregatedMax));
   } catch (error: any) {
     res.status(404).json({ error: "Imóvel não encontrado" });
   }
@@ -420,7 +470,9 @@ propertiesRouter.post("/batch", async (req, res) => {
     const properties = await Promise.all(cleanIds.map(async (id: string) => {
       try {
         const data = await fetchAocubo(`/${id}`);
-        return normalizeProperty(data);
+        const name = data.name || data.title;
+        const aggregatedMax = await getAggregatedMaxBedrooms(name);
+        return normalizeProperty(data, aggregatedMax);
       } catch (err) {
         console.error(`Error fetching property ${id} in batch:`, err);
         return null;

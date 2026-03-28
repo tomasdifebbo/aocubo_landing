@@ -19,7 +19,17 @@ export default function PropertyCard({
   bedrooms,
   area,
   status,
-}: PropertyCardProps) {
+  maxBedrooms,
+}: PropertyCardProps & { maxBedrooms?: number }) {
+  const bedroomLabel = (() => {
+    const max = maxBedrooms ?? bedrooms;
+    if (bedrooms === max) {
+      return bedrooms === 0 ? "Studio" : `${bedrooms} quarto${bedrooms > 1 ? "s" : ""}`;
+    }
+    const minLabel = bedrooms === 0 ? "Studio" : `${bedrooms}`;
+    return `${minLabel} a ${max} quartos`;
+  })();
+
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer border-0">
       {/* Image Container */}
@@ -56,7 +66,7 @@ export default function PropertyCard({
         <div className="flex items-center gap-6 pt-4 border-t border-border">
           <div className="flex items-center gap-2">
             <BedDouble className="w-4 h-4 text-primary" />
-            <span className="text-sm text-foreground">{bedrooms} quarto{bedrooms !== 1 ? 's' : ''}</span>
+            <span className="text-sm text-foreground">{bedroomLabel}</span>
           </div>
           <div className="flex items-center gap-2">
             <Maximize2 className="w-4 h-4 text-primary" />

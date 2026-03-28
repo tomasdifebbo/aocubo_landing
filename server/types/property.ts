@@ -63,6 +63,8 @@ export interface Property {
     bathrooms: number;
     area: number;
     parkingSlots: number;
+    minParkingSlots: number;
+    maxParkingSlots: number;
     status: "Pronto" | "Em obras" | "Breve lançamento";
     images: string[];
     url: string;
@@ -70,6 +72,7 @@ export interface Property {
     characteristics: string[];
     units: PropertyUnit[];
     type: string;
+    maxBedrooms: number;
 }
 
 export interface PropertiesResponse {

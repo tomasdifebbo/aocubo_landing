@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BedDouble, Maximize2, MapPin, RefreshCw, AlertCircle, Heart, Loader2, X } from "lucide-react";
+import { BedDouble, Maximize2, MapPin, RefreshCw, AlertCircle, Heart, Loader2, X, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useProperties, type PropertyData, type UsePropertiesOptions } from "@/hooks/useProperties";
@@ -205,11 +205,34 @@ export function PropertyCard({ property, index, showFavorite = true, showRemove 
                 <div className="flex items-center gap-4 text-slate-600">
                   <div className="flex flex-col items-center">
                     <BedDouble className="w-4 h-4 mb-1 text-slate-500" />
-                    <span className="text-[10px] font-bold">{property.bedrooms === 0 ? "Studio" : property.bedrooms}</span>
+                    <span className="text-[10px] font-bold">
+                      {(() => {
+                        const min = property.bedrooms;
+                        const max = property.maxBedrooms;
+                        if (min === max) {
+                          return min === 0 ? "Studio" : `${min} quarto${min > 1 ? "s" : ""}`;
+                        }
+                        const minLabel = min === 0 ? "Studio" : `${min}`;
+                        return `${minLabel} a ${max} quartos`;
+                      })()}
+                    </span>
                   </div>
                   <div className="flex flex-col items-center">
                     <Maximize2 className="w-4 h-4 mb-1 text-slate-500" />
                     <span className="text-[10px] font-bold">{property.area}m²</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <Car className="w-4 h-4 mb-1 text-slate-500" />
+                    <span className="text-[10px] font-bold">
+                      {(() => {
+                        const min = property.minParkingSlots ?? property.parkingSlots;
+                        const max = property.maxParkingSlots ?? property.parkingSlots;
+                        if (min === max) {
+                          return `${min} vaga${min !== 1 ? "s" : ""}`;
+                        }
+                        return `${min} a ${max} vagas`;
+                      })()}
+                    </span>
                   </div>
                 </div>
               </div>

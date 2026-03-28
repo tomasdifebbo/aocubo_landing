@@ -23,6 +23,8 @@ export interface PropertyData {
     bathrooms: number;
     area: number;
     parkingSlots: number;
+    minParkingSlots: number;
+    maxParkingSlots: number;
     status: "Pronto" | "Em obras" | "Breve lançamento";
     images: string[];
     url: string;
@@ -30,6 +32,7 @@ export interface PropertyData {
     characteristics: string[];
     units: PropertyUnit[];
     type: string;
+    maxBedrooms: number;
     address?: string;
 }
 

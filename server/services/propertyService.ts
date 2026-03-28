@@ -16,6 +16,54 @@ interface CacheEntry {
 }
 
 const cache = new Map<string, CacheEntry>();
+const nameBedroomCache = new Map<string, { stats: AggregatedStats, timestamp: number }>();
+
+interface AggregatedStats {
+    maxBedrooms: number;
+    minParkingSlots: number;
+    maxParkingSlots: number;
+}
+
+async function getAggregatedUnitStats(propertyId: string, fallbackUnits?: any[]): Promise<AggregatedStats> {
+    const defaultStats: AggregatedStats = { maxBedrooms: 0, minParkingSlots: 0, maxParkingSlots: 0 };
+    if (!propertyId) return defaultStats;
+    
+    const cached = nameBedroomCache.get(propertyId);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+        return cached.stats;
+    }
+
+    function computeStats(units: any[]): AggregatedStats {
+        const bedCounts = units.map((u: any) => Number(u.bedrooms)).filter((n: any) => !isNaN(n));
+        const parkCounts = units.map((u: any) => Number(u.parkingSlots ?? u.parking_slots ?? 0)).filter((n: any) => !isNaN(n));
+        return {
+            maxBedrooms: bedCounts.length > 0 ? Math.max(0, ...bedCounts) : 0,
+            minParkingSlots: parkCounts.length > 0 ? Math.min(...parkCounts) : 0,
+            maxParkingSlots: parkCounts.length > 0 ? Math.max(0, ...parkCounts) : 0,
+        };
+    }
+
+    try {
+        const url = `${AOCUBO_API_BASE}/${propertyId}`;
+        const res = await fetch(url, { headers: { "Accept": "application/json", "X-Platform": "web" } });
+        if (!res.ok) {
+            if (fallbackUnits && fallbackUnits.length > 0) return computeStats(fallbackUnits);
+            return defaultStats;
+        }
+        
+        const data = await res.json();
+        const units = data.units || [];
+        const stats = computeStats(units);
+        nameBedroomCache.set(propertyId, { stats, timestamp: Date.now() });
+        return stats;
+    } catch (err) {
+        console.error(`Error aggregating stats for property ${propertyId}:`, err);
+        if (fallbackUnits && fallbackUnits.length > 0) return computeStats(fallbackUnits);
+        return defaultStats;
+    }
+}
+
+
 
 function getCached(key: string): PropertiesResponse | null {
     const entry = cache.get(key);
@@ -67,7 +115,7 @@ function parseDescription(desc: any): string {
     return "";
 }
 
-function normalise(raw: RawProperty): Property {
+function normalise(raw: RawProperty, aggregatedStats?: AggregatedStats): Property {
     const units = Array.isArray((raw as any).units) ? (raw as any).units : [];
 
     const mappedUnits: any[] = units.map((u: any) => {
@@ -196,9 +244,18 @@ function normalise(raw: RawProperty): Property {
         priceFormatted: formatPrice(price),
         neighborhood,
         bedrooms: refUnit.bedrooms ?? 0,
+        maxBedrooms: aggregatedStats?.maxBedrooms ?? (() => {
+            const counts = mappedUnits.map((u: any) => Number(u.bedrooms)).filter(n => !isNaN(n));
+            return counts.length > 0 ? Math.max(0, ...counts) : 0;
+        })(),
         bathrooms: refUnit.bathrooms ?? 0,
         area: refUnit.livingArea ?? 0,
         parkingSlots: refUnit.parkingSlots ?? 0,
+        minParkingSlots: aggregatedStats?.minParkingSlots ?? refUnit.parkingSlots ?? 0,
+        maxParkingSlots: aggregatedStats?.maxParkingSlots ?? (() => {
+            const counts = mappedUnits.map((u: any) => Number(u.parkingSlots ?? 0)).filter(n => !isNaN(n));
+            return counts.length > 0 ? Math.max(0, ...counts) : 0;
+        })(),
         status: mapStatus(raw.constructionStatus ?? (raw as any).status ?? ""),
         images: images.length > 0 ? images : ["https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"],
         url: `https://www.aocubo.com/imovel/${raw.slug}/${raw.id}`,
@@ -281,8 +338,14 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
 
     const raw: RawPropertiesResponse = await response.json();
 
+    const rawItems = raw.content ?? [];
+    const properties = await Promise.all(rawItems.map(async (item: any) => {
+        const stats = await getAggregatedUnitStats(String(item.id), item.units);
+        return normalise(item, stats);
+    }));
+
     const result: PropertiesResponse = {
-        properties: (raw.content ?? []).map(normalise),
+        properties,
         total: raw.totalElements ?? 0,
         page: raw.page ?? (raw.number !== undefined ? raw.number + 1 : opts.page),
         totalPages: raw.totalPages ?? 1,
@@ -329,7 +392,8 @@ export async function getPropertyBySlug(slug: string): Promise<Property> {
         return await getPropertyById(String(basicProperty.id));
     } catch (e) {
         console.error("[PropertyService] Failed to supplement fetch, returning basic data:", e);
-        return normalise(basicProperty);
+        const stats = await getAggregatedUnitStats(String(basicProperty.id), (basicProperty as any).units);
+        return normalise(basicProperty, stats);
     }
 }
 
@@ -367,7 +431,8 @@ export async function getPropertyById(id: string): Promise<Property> {
     }
 
     const raw: RawProperty = await response.json();
-    return normalise(raw);
+    const stats = await getAggregatedUnitStats(String(raw.id), (raw as any).units);
+    return normalise(raw, stats);
 }
 
 export async function fetchPropertiesByIds(ids: string[]): Promise<Property[]> {
