@@ -16,50 +16,30 @@ interface CacheEntry {
 }
 
 const cache = new Map<string, CacheEntry>();
-const nameBedroomCache = new Map<string, { stats: AggregatedStats, timestamp: number }>();
+const nameBedroomCache = new Map<string, { units: any[], timestamp: number }>();
 
-interface AggregatedStats {
-    maxBedrooms: number;
-    minParkingSlots: number;
-    maxParkingSlots: number;
-}
-
-async function getAggregatedUnitStats(propertyId: string, fallbackUnits?: any[]): Promise<AggregatedStats> {
-    const defaultStats: AggregatedStats = { maxBedrooms: 0, minParkingSlots: 0, maxParkingSlots: 0 };
-    if (!propertyId) return defaultStats;
+async function getAggregatedUnits(propertyId: string, fallbackUnits?: any[]): Promise<any[]> {
+    if (!propertyId) return fallbackUnits || [];
     
     const cached = nameBedroomCache.get(propertyId);
     if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
-        return cached.stats;
-    }
-
-    function computeStats(units: any[]): AggregatedStats {
-        const bedCounts = units.map((u: any) => Number(u.bedrooms)).filter((n: any) => !isNaN(n));
-        const parkCounts = units.map((u: any) => Number(u.parkingSlots ?? u.parking_slots ?? 0)).filter((n: any) => !isNaN(n));
-        return {
-            maxBedrooms: bedCounts.length > 0 ? Math.max(0, ...bedCounts) : 0,
-            minParkingSlots: parkCounts.length > 0 ? Math.min(...parkCounts) : 0,
-            maxParkingSlots: parkCounts.length > 0 ? Math.max(0, ...parkCounts) : 0,
-        };
+        return cached.units;
     }
 
     try {
         const url = `${AOCUBO_API_BASE}/${propertyId}`;
         const res = await fetch(url, { headers: { "Accept": "application/json", "X-Platform": "web" } });
         if (!res.ok) {
-            if (fallbackUnits && fallbackUnits.length > 0) return computeStats(fallbackUnits);
-            return defaultStats;
+            return fallbackUnits || [];
         }
         
         const data = await res.json();
         const units = data.units || [];
-        const stats = computeStats(units);
-        nameBedroomCache.set(propertyId, { stats, timestamp: Date.now() });
-        return stats;
+        nameBedroomCache.set(propertyId, { units, timestamp: Date.now() });
+        return units;
     } catch (err) {
-        console.error(`Error aggregating stats for property ${propertyId}:`, err);
-        if (fallbackUnits && fallbackUnits.length > 0) return computeStats(fallbackUnits);
-        return defaultStats;
+        console.error(`Error aggregating units for property ${propertyId}:`, err);
+        return fallbackUnits || [];
     }
 }
 
@@ -115,7 +95,7 @@ function parseDescription(desc: any): string {
     return "";
 }
 
-function normalise(raw: RawProperty, aggregatedStats?: AggregatedStats): Property {
+function normalise(raw: RawProperty, fullUnits?: any[], filterBedrooms?: number, filterParkingSlots?: number): Property {
     const units = Array.isArray((raw as any).units) ? (raw as any).units : [];
 
     const mappedUnits: any[] = units.map((u: any) => {
@@ -135,14 +115,37 @@ function normalise(raw: RawProperty, aggregatedStats?: AggregatedStats): Propert
             bedrooms: u.bedrooms ?? 0,
             bathrooms: u.bathrooms ?? 0,
             livingArea: u.livingArea ?? 0,
-            parkingSlots: u.parkingSlots ?? 0,
+            parkingSlots: u.parkingSlots ?? u.parking_slots ?? 0,
             attachments: filteredAttachments,
             type: u.unitType?.name || (u.bedrooms === 0 ? "Studio" : "Apartamento"),
         };
     });
 
-    let refUnit: any = mappedUnits.length > 0
-        ? mappedUnits.reduce((min: any, curr: any) => (curr.price < min.price && curr.price > 0) ? curr : min, mappedUnits[0])
+    // ─── Filter units dynamically based on user search ─────────────
+    let targetUnits = fullUnits && fullUnits.length > 0 ? fullUnits : mappedUnits;
+    if (filterBedrooms !== undefined) {
+        targetUnits = targetUnits.filter((u: any) => u.bedrooms === filterBedrooms);
+    }
+    if (filterParkingSlots !== undefined) {
+        if (filterParkingSlots >= 4) {
+            targetUnits = targetUnits.filter((u: any) => (u.parkingSlots ?? u.parking_slots ?? 0) >= filterParkingSlots);
+        } else {
+            targetUnits = targetUnits.filter((u: any) => (u.parkingSlots ?? u.parking_slots ?? 0) === filterParkingSlots);
+        }
+    }
+    // Fallback if strict filter yields nothing
+    if (targetUnits.length === 0) targetUnits = fullUnits && fullUnits.length > 0 ? fullUnits : mappedUnits;
+
+    // Compute min/max stats ONLY on the dynamically filtered units
+    const bedCounts = targetUnits.map((u: any) => Number(u.bedrooms)).filter((n: any) => !isNaN(n));
+    const parkCounts = targetUnits.map((u: any) => Number(u.parkingSlots ?? u.parking_slots ?? 0)).filter((n: any) => !isNaN(n));
+    
+    const computedMaxBedrooms = bedCounts.length > 0 ? Math.max(0, ...bedCounts) : 0;
+    const computedMinParking = parkCounts.length > 0 ? Math.min(...parkCounts) : 0;
+    const computedMaxParking = parkCounts.length > 0 ? Math.max(0, ...parkCounts) : 0;
+
+    let refUnit: any = targetUnits.length > 0
+        ? targetUnits.reduce((min: any, curr: any) => (curr.price < min.price && curr.price > 0) ? curr : min, targetUnits[0])
         : { price: 0, bedrooms: 0, bathrooms: 0, livingArea: 0, parkingSlots: 0 };
 
     let propertyTypeName = (raw as any).propertyType?.name || "Apartamento";
@@ -244,18 +247,12 @@ function normalise(raw: RawProperty, aggregatedStats?: AggregatedStats): Propert
         priceFormatted: formatPrice(price),
         neighborhood,
         bedrooms: refUnit.bedrooms ?? 0,
-        maxBedrooms: aggregatedStats?.maxBedrooms ?? (() => {
-            const counts = mappedUnits.map((u: any) => Number(u.bedrooms)).filter(n => !isNaN(n));
-            return counts.length > 0 ? Math.max(0, ...counts) : 0;
-        })(),
+        maxBedrooms: computedMaxBedrooms,
         bathrooms: refUnit.bathrooms ?? 0,
         area: refUnit.livingArea ?? 0,
-        parkingSlots: refUnit.parkingSlots ?? 0,
-        minParkingSlots: aggregatedStats?.minParkingSlots ?? refUnit.parkingSlots ?? 0,
-        maxParkingSlots: aggregatedStats?.maxParkingSlots ?? (() => {
-            const counts = mappedUnits.map((u: any) => Number(u.parkingSlots ?? 0)).filter(n => !isNaN(n));
-            return counts.length > 0 ? Math.max(0, ...counts) : 0;
-        })(),
+        parkingSlots: refUnit.parkingSlots ?? refUnit.parking_slots ?? 0,
+        minParkingSlots: computedMinParking,
+        maxParkingSlots: computedMaxParking,
         status: mapStatus(raw.constructionStatus ?? (raw as any).status ?? ""),
         images: images.length > 0 ? images : ["https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"],
         url: `https://www.aocubo.com/imovel/${raw.slug}/${raw.id}`,
@@ -351,8 +348,8 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
 
     const rawItems = raw.content ?? [];
     const properties = await Promise.all(rawItems.map(async (item: any) => {
-        const stats = await getAggregatedUnitStats(String(item.id), item.units);
-        return normalise(item, stats);
+        const fullUnits = await getAggregatedUnits(String(item.id), item.units);
+        return normalise(item, fullUnits, opts.bedrooms, opts.parkingSlots);
     }));
 
     const result: PropertiesResponse = {
@@ -403,8 +400,8 @@ export async function getPropertyBySlug(slug: string): Promise<Property> {
         return await getPropertyById(String(basicProperty.id));
     } catch (e) {
         console.error("[PropertyService] Failed to supplement fetch, returning basic data:", e);
-        const stats = await getAggregatedUnitStats(String(basicProperty.id), (basicProperty as any).units);
-        return normalise(basicProperty, stats);
+        const fullUnits = await getAggregatedUnits(String(basicProperty.id), (basicProperty as any).units);
+        return normalise(basicProperty, fullUnits);
     }
 }
 
@@ -442,8 +439,8 @@ export async function getPropertyById(id: string): Promise<Property> {
     }
 
     const raw: RawProperty = await response.json();
-    const stats = await getAggregatedUnitStats(String(raw.id), (raw as any).units);
-    return normalise(raw, stats);
+    const fullUnits = await getAggregatedUnits(String(raw.id), (raw as any).units);
+    return normalise(raw, fullUnits);
 }
 
 export async function fetchPropertiesByIds(ids: string[]): Promise<Property[]> {
