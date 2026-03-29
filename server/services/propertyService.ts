@@ -275,6 +275,7 @@ interface FetchOptions {
     maxPrice?: number;
     status?: string;
     neighborhood?: string;
+    parkingSlots?: number;
 }
 
 export async function fetchProperties(opts: FetchOptions): Promise<PropertiesResponse> {
@@ -320,6 +321,17 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
     if (opts.neighborhood) {
         params.set("search[neighborhood.name][value]", opts.neighborhood);
         params.set("search[neighborhood.name][type]", "ILIKE");
+    }
+
+    // Parking slots filter
+    if (opts.parkingSlots !== undefined) {
+        if (opts.parkingSlots === 0) {
+            params.set("search[units.parkingSlots][value]", "0");
+            params.set("search[units.parkingSlots][type]", "EQUAL");
+        } else {
+            params.set("search[units.parkingSlots][value]", String(opts.parkingSlots));
+            params.set("search[units.parkingSlots][type]", "GREATER_THAN_EQUAL");
+        }
     }
 
     const url = `${AOCUBO_API_BASE}?${params.toString()}`;

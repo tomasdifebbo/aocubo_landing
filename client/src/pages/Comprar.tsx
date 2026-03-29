@@ -11,7 +11,7 @@ export default function Comprar() {
     const [page, setPage] = useState(1);
     // Read initial filters from URL OR localStorage
     const getInitialFilters = () => {
-        if (typeof window === "undefined") return { neighborhood: "", bedrooms: "0", maxPrice: "0", status: "all" };
+        if (typeof window === "undefined") return { neighborhood: "", bedrooms: "0", parkingSlots: "0", maxPrice: "0", status: "all" };
         const searchParams = new URLSearchParams(window.location.search);
 
         // Priority: 1. URL params, 2. localStorage, 3. Default
@@ -21,6 +21,7 @@ export default function Comprar() {
         return {
             neighborhood: searchParams.get("bairro") || lastFilters.neighborhood || "",
             bedrooms: searchParams.get("quartos") || lastFilters.bedrooms || "0",
+            parkingSlots: searchParams.get("vagas") || lastFilters.parkingSlots || "0",
             maxPrice: searchParams.get("preco") || lastFilters.maxPrice || "0",
             status: searchParams.get("status") || lastFilters.status || "all",
         };
@@ -29,17 +30,20 @@ export default function Comprar() {
     const initial = getInitialFilters();
     const [inputNeighborhood, setInputNeighborhood] = useState(initial.neighborhood);
     const [inputBedrooms, setInputBedrooms] = useState<string>(initial.bedrooms);
+    const [inputParkingSlots, setInputParkingSlots] = useState<string>(initial.parkingSlots);
     const [inputMaxPrice, setInputMaxPrice] = useState<string>(initial.maxPrice);
     const [inputStatus, setInputStatus] = useState<string>(initial.status);
 
     const [filters, setFilters] = useState<{
         neighborhood?: string;
         bedrooms?: number;
+        parkingSlots?: number;
         maxPrice?: number;
         status?: string;
     }>({
         neighborhood: initial.neighborhood || undefined,
         bedrooms: initial.bedrooms !== "0" ? parseInt(initial.bedrooms) : undefined,
+        parkingSlots: initial.parkingSlots !== "0" ? (initial.parkingSlots === "none" ? 0 : parseInt(initial.parkingSlots)) : undefined,
         maxPrice: initial.maxPrice !== "0" ? parseInt(initial.maxPrice) : undefined,
         status: initial.status === "all" ? undefined : initial.status,
     });
@@ -56,6 +60,10 @@ export default function Comprar() {
         if (inputBedrooms !== "0") {
             params.set("quartos", inputBedrooms);
             storageObj.bedrooms = inputBedrooms;
+        }
+        if (inputParkingSlots !== "0") {
+            params.set("vagas", inputParkingSlots);
+            storageObj.parkingSlots = inputParkingSlots;
         }
         if (inputMaxPrice !== "0") {
             params.set("preco", inputMaxPrice);
@@ -77,7 +85,7 @@ export default function Comprar() {
             // Update Storage
             localStorage.setItem("adjs_last_filters", JSON.stringify(storageObj));
         }
-    }, [inputNeighborhood, inputBedrooms, inputMaxPrice, inputStatus]);
+    }, [inputNeighborhood, inputBedrooms, inputParkingSlots, inputMaxPrice, inputStatus]);
 
     // Reset page when filters change
     const applyFilters = (shouldScroll = false) => {
@@ -85,6 +93,7 @@ export default function Comprar() {
         setFilters({
             neighborhood: inputNeighborhood.trim() || undefined,
             bedrooms: inputBedrooms !== "0" ? parseInt(inputBedrooms) : undefined,
+            parkingSlots: inputParkingSlots !== "0" ? (inputParkingSlots === "none" ? 0 : parseInt(inputParkingSlots)) : undefined,
             maxPrice: inputMaxPrice !== "0" ? parseInt(inputMaxPrice) : undefined,
             status: inputStatus === "all" ? undefined : inputStatus,
         });
@@ -101,11 +110,12 @@ export default function Comprar() {
             applyFilters();
         }, 400); // More responsive 400ms debounce
         return () => clearTimeout(timer);
-    }, [inputNeighborhood, inputBedrooms, inputMaxPrice, inputStatus]);
+    }, [inputNeighborhood, inputBedrooms, inputParkingSlots, inputMaxPrice, inputStatus]);
 
     const clearFilters = () => {
         setInputNeighborhood("");
         setInputBedrooms("0");
+        setInputParkingSlots("0");
         setInputMaxPrice("0");
         setInputStatus("all");
         setPage(1);
@@ -140,7 +150,7 @@ export default function Comprar() {
 
                         {/* Search Form Container - Maximum Transparency Glass Effect */}
                         <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-4 md:p-10 shadow-2xl max-w-5xl mx-auto border border-white/20">
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
 
                                 <div className="col-span-2 lg:col-span-1 text-left">
                                     <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Bairro</label>
@@ -181,6 +191,22 @@ export default function Comprar() {
                                             <SelectItem value="500000" className="cursor-pointer">Até 500 mil</SelectItem>
                                             <SelectItem value="1000000" className="cursor-pointer">Até 1M</SelectItem>
                                             <SelectItem value="5000000" className="cursor-pointer">Até 5M</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="col-span-1">
+                                    <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Vagas</label>
+                                    <Select value={inputParkingSlots} onValueChange={setInputParkingSlots}>
+                                        <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
+                                            <SelectValue placeholder="Qualquer" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                                            <SelectItem value="0" className="cursor-pointer">Qualquer</SelectItem>
+                                            <SelectItem value="none" className="cursor-pointer">Sem vagas</SelectItem>
+                                            <SelectItem value="1" className="cursor-pointer">1+ Vaga</SelectItem>
+                                            <SelectItem value="2" className="cursor-pointer">2+ Vagas</SelectItem>
+                                            <SelectItem value="3" className="cursor-pointer">3+ Vagas</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

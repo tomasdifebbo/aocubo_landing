@@ -15,8 +15,9 @@ router.get("/", async (req: Request, res: Response) => {
         const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice as string) : undefined;
         const status = req.query.status as string | undefined;
         const neighborhood = req.query.neighborhood as string | undefined;
+        const parkingSlots = req.query.parkingSlots ? parseInt(req.query.parkingSlots as string) : undefined;
 
-        const result = await fetchProperties({ page, limit, bedrooms, minPrice, maxPrice, status, neighborhood });
+        const result = await fetchProperties({ page, limit, bedrooms, minPrice, maxPrice, status, neighborhood, parkingSlots });
 
         res.json(result);
     } catch (error) {

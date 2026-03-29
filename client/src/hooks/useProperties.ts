@@ -51,6 +51,7 @@ export interface UsePropertiesOptions {
     maxPrice?: number;
     status?: string;
     neighborhood?: string;
+    parkingSlots?: number;
 }
 
 export interface UsePropertiesReturn {
@@ -84,6 +85,7 @@ export function useProperties(options: UsePropertiesOptions = {}): UseProperties
             if (maxPrice !== undefined) params.set("maxPrice", String(maxPrice));
             if (options.status) params.set("status", options.status);
             if (options.neighborhood) params.set("neighborhood", options.neighborhood);
+            if (options.parkingSlots !== undefined) params.set("parkingSlots", String(options.parkingSlots));
 
             try {
                 const res = await fetch(`/api/properties?${params.toString()}`);
@@ -99,7 +101,7 @@ export function useProperties(options: UsePropertiesOptions = {}): UseProperties
 
         load();
         return () => { cancelled = true; };
-    }, [page, limit, bedrooms, minPrice, maxPrice, options.status, options.neighborhood, tick]);
+    }, [page, limit, bedrooms, minPrice, maxPrice, options.status, options.neighborhood, options.parkingSlots, tick]);
 
     const refetch = () => setTick((t) => t + 1);
 
