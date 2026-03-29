@@ -7,6 +7,7 @@ interface HeroProps {
   onSearch: (filters: {
     neighborhood?: string;
     bedrooms?: number;
+    parkingSlots?: number;
     maxPrice?: number;
     status?: string;
   }) => void;
@@ -21,6 +22,7 @@ export default function Hero({ onSearch }: HeroProps) {
     return {
       neighborhood: lastFilters.neighborhood || "",
       bedrooms: lastFilters.bedrooms || "0",
+      parkingSlots: lastFilters.parkingSlots || "0",
       maxPrice: lastFilters.maxPrice || "0",
       status: lastFilters.status || "all",
     };
@@ -29,6 +31,7 @@ export default function Hero({ onSearch }: HeroProps) {
   const initial = getInitialFilters();
   const [neighborhood, setNeighborhood] = useState(initial.neighborhood);
   const [bedrooms, setBedrooms] = useState<string>(initial.bedrooms);
+  const [parkingSlots, setParkingSlots] = useState<string>(initial.parkingSlots);
   const [maxPrice, setMaxPrice] = useState<string>(initial.maxPrice);
   const [status, setStatus] = useState<string>(initial.status);
 
@@ -36,6 +39,7 @@ export default function Hero({ onSearch }: HeroProps) {
     onSearch({
       neighborhood: neighborhood.trim() || undefined,
       bedrooms: bedrooms !== "0" ? parseInt(bedrooms) : undefined,
+      parkingSlots: parkingSlots !== "0" ? (parkingSlots === "none" ? 0 : parseInt(parkingSlots)) : undefined,
       maxPrice: maxPrice !== "0" ? parseInt(maxPrice) : undefined,
       status: status === "all" ? undefined : status,
     });
@@ -47,11 +51,12 @@ export default function Hero({ onSearch }: HeroProps) {
     const storageObj = {
       neighborhood: neighborhood.trim(), // Keep it clean for restoration
       bedrooms,
+      parkingSlots,
       maxPrice,
       status
     };
     localStorage.setItem("adjs_last_filters", JSON.stringify(storageObj));
-  }, [neighborhood, bedrooms, maxPrice, status]);
+  }, [neighborhood, bedrooms, parkingSlots, maxPrice, status]);
 
   // Auto-apply filters with debounce
   useEffect(() => {
@@ -59,7 +64,7 @@ export default function Hero({ onSearch }: HeroProps) {
       handleSearch();
     }, 400); // 400ms for snappier feel
     return () => clearTimeout(timer);
-  }, [neighborhood, bedrooms, maxPrice, status]);
+  }, [neighborhood, bedrooms, parkingSlots, maxPrice, status]);
 
   return (
     <section
@@ -82,7 +87,7 @@ export default function Hero({ onSearch }: HeroProps) {
 
         {/* Search Form Container - Maximum Transparency Glass Effect */}
         <div className="bg-white/10 backdrop-blur-3xl rounded-3xl p-4 md:p-10 shadow-2xl max-w-5xl mx-auto border border-white/20">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-6">
 
             <div className="col-span-2 lg:col-span-1 text-left">
               <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Bairro</label>
@@ -106,6 +111,23 @@ export default function Hero({ onSearch }: HeroProps) {
                   <SelectItem value="2" className="cursor-pointer">2 Quartos</SelectItem>
                   <SelectItem value="3" className="cursor-pointer">3 Quartos</SelectItem>
                   <SelectItem value="4" className="cursor-pointer">4+ Quartos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="col-span-1">
+              <label className="block text-[10px] font-black text-white uppercase tracking-[0.2em] mb-2 md:mb-3 drop-shadow-md">Vagas</label>
+              <Select value={parkingSlots} onValueChange={setParkingSlots}>
+                <SelectTrigger className="w-full border-slate-100 bg-slate-50 h-12 md:h-14 rounded-2xl focus:ring-primary/20">
+                  <SelectValue placeholder="Qualquer" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
+                  <SelectItem value="0" className="cursor-pointer">Qualquer</SelectItem>
+                  <SelectItem value="none" className="cursor-pointer">Sem vagas</SelectItem>
+                  <SelectItem value="1" className="cursor-pointer">1 Vaga</SelectItem>
+                  <SelectItem value="2" className="cursor-pointer">2 Vagas</SelectItem>
+                  <SelectItem value="3" className="cursor-pointer">3 Vagas</SelectItem>
+                  <SelectItem value="4" className="cursor-pointer">4+ Vagas</SelectItem>
                 </SelectContent>
               </Select>
             </div>

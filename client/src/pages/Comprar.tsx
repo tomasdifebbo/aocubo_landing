@@ -204,9 +204,10 @@ export default function Comprar() {
                                         <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
                                             <SelectItem value="0" className="cursor-pointer">Qualquer</SelectItem>
                                             <SelectItem value="none" className="cursor-pointer">Sem vagas</SelectItem>
-                                            <SelectItem value="1" className="cursor-pointer">1+ Vaga</SelectItem>
-                                            <SelectItem value="2" className="cursor-pointer">2+ Vagas</SelectItem>
-                                            <SelectItem value="3" className="cursor-pointer">3+ Vagas</SelectItem>
+                                            <SelectItem value="1" className="cursor-pointer">1 Vaga</SelectItem>
+                                            <SelectItem value="2" className="cursor-pointer">2 Vagas</SelectItem>
+                                            <SelectItem value="3" className="cursor-pointer">3 Vagas</SelectItem>
+                                            <SelectItem value="4" className="cursor-pointer">4+ Vagas</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

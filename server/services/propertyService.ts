@@ -325,12 +325,11 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
 
     // Parking slots filter
     if (opts.parkingSlots !== undefined) {
-        if (opts.parkingSlots === 0) {
-            params.set("search[units.parkingSlots][value]", "0");
-            params.set("search[units.parkingSlots][type]", "EQUAL");
-        } else {
-            params.set("search[units.parkingSlots][value]", String(opts.parkingSlots));
+        params.set("search[units.parkingSlots][value]", String(opts.parkingSlots));
+        if (opts.parkingSlots >= 4) {
             params.set("search[units.parkingSlots][type]", "GREATER_THAN_EQUAL");
+        } else {
+            params.set("search[units.parkingSlots][type]", "EQUAL");
         }
     }
 

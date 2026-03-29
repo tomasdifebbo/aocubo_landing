@@ -9,6 +9,7 @@ export default function Home() {
   const [filters, setFilters] = useState<{
     neighborhood?: string;
     bedrooms?: number;
+    parkingSlots?: number;
     maxPrice?: number;
     status?: string;
   }>({});
