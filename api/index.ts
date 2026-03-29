@@ -15,6 +15,8 @@ export interface PropertyData {
   bathrooms: number;
   area: number;
   parkingSlots: number;
+  minParkingSlots?: number;
+  maxParkingSlots?: number;
   status: "Pronto" | "Em obras" | "Breve lançamento";
   images: string[];
   url: string;
@@ -113,7 +115,7 @@ function parseDescription(desc: any): string {
   return desc;
 }
 
-function normalizeProperty(raw: any, aggregatedMax?: number): PropertyData {
+function normalizeProperty(raw: any, aggregatedMax?: number, filterBedrooms?: number, filterParkingSlots?: number): PropertyData {
   if (!raw || typeof raw !== 'object') {
     return {
       id: "err-" + Math.random().toString(36).slice(2, 6),
@@ -169,13 +171,32 @@ function normalizeProperty(raw: any, aggregatedMax?: number): PropertyData {
     }).map((a: any) => ({ id: a.id, url: typeof a === 'string' ? a : a.url })) : []
   }));
 
-  // Find cheapest unit for reference price (ignoring zeros)
-  const pricedUnits = normalizedUnits.filter((u: any) => u.price > 0);
+  // Filter units dynamically based on user search
+  let targetUnits = normalizedUnits;
+  if (filterBedrooms !== undefined) {
+      targetUnits = targetUnits.filter((u: any) => u.bedrooms === filterBedrooms);
+  }
+  if (filterParkingSlots !== undefined) {
+      if (filterParkingSlots >= 4) {
+          targetUnits = targetUnits.filter((u: any) => u.parkingSlots >= filterParkingSlots);
+      } else {
+          targetUnits = targetUnits.filter((u: any) => u.parkingSlots === filterParkingSlots);
+      }
+  }
+  if (targetUnits.length === 0) targetUnits = normalizedUnits;
+
+  // Find cheapest unit for reference price AFTER filtering
+  const pricedUnits = targetUnits.filter((u: any) => u.price > 0);
   const refUnit = pricedUnits.length > 0
     ? pricedUnits.reduce((min: any, curr: any) => curr.price < min.price ? curr : min)
-    : (normalizedUnits[0] || { price: 0, bedrooms: 0, bathrooms: 0, livingArea: 0, parkingSlots: 0 });
+    : (targetUnits[0] || normalizedUnits[0] || { price: 0, bedrooms: 0, bathrooms: 0, livingArea: 0, parkingSlots: 0 });
 
   const pVal = Number(refUnit.price || raw.price || mainUnit.price || 0);
+
+  // Compute parking stats
+  const parkCounts = targetUnits.map((u: any) => Number(u.parkingSlots)).filter((n: any) => !isNaN(n));
+  const computedMinParking = parkCounts.length > 0 ? Math.min(...parkCounts) : 0;
+  const computedMaxParking = parkCounts.length > 0 ? Math.max(0, ...parkCounts) : 0;
 
   // Collect images with metadata for better filtering
   const propertyImages: { url: string, name: string }[] = [];
@@ -305,6 +326,8 @@ function normalizeProperty(raw: any, aggregatedMax?: number): PropertyData {
     bathrooms: Number(refUnit.bathrooms ?? raw.bathrooms ?? mainUnit.bathrooms ?? 0),
     area: Number(refUnit.livingArea ?? raw.area ?? mainUnit.livingArea ?? 0),
     parkingSlots: Number(refUnit.parkingSlots ?? raw.parkingSlots ?? mainUnit.parkingSlots ?? 0),
+    minParkingSlots: computedMinParking,
+    maxParkingSlots: computedMaxParking,
     status,
     images: finalImages.length > 0 ? finalImages : ["https://d2xsxph8kpxj0f.cloudfront.net/310519663366689293/jsiKnDEmDWyHsAZxshzkFX/apartment-interior-AsrdjbkKxpBi7u6wHztwSk.webp"],
     url: `https://www.aocubo.com/imovel/${raw.slug || id}/${id}`,
@@ -343,6 +366,15 @@ propertiesRouter.get("/", async (req, res) => {
     if (req.query.bedrooms) {
       params["search[units.bedrooms][value]"] = req.query.bedrooms;
       params["search[units.bedrooms][type]"] = "EQUAL";
+    }
+
+    if (req.query.parkingSlots) {
+      params["search[units.parkingSlots][value]"] = req.query.parkingSlots;
+      if (Number(req.query.parkingSlots) >= 4) {
+        params["search[units.parkingSlots][type]"] = "GREATER_THAN_EQUAL";
+      } else {
+        params["search[units.parkingSlots][type]"] = "EQUAL";
+      }
     }
 
     if (req.query.neighborhood) {
@@ -387,13 +419,15 @@ propertiesRouter.get("/", async (req, res) => {
     const properties = await Promise.all(rawItems.map(async (raw: any) => {
       const name = raw.name || raw.title;
       const aggregatedMax = await getAggregatedMaxBedrooms(name);
+      const filterBedrooms = req.query.bedrooms ? Number(req.query.bedrooms) : undefined;
+      const filterParkingSlots = req.query.parkingSlots !== undefined ? Number(req.query.parkingSlots) : undefined;
 
-      let normalized = normalizeProperty(raw, aggregatedMax);
+      let normalized = normalizeProperty(raw, aggregatedMax, filterBedrooms, filterParkingSlots);
       // Only trigger full fetch if data is incomplete or if we have very few images (less than 3)
       if (normalized.price === 0 || normalized.area === 0 || normalized.images.length < 3) {
         try {
           const fullData = await fetchAocubo(`/${raw.id}`);
-          return normalizeProperty(fullData, aggregatedMax);
+          return normalizeProperty(fullData, aggregatedMax, filterBedrooms, filterParkingSlots);
         } catch {
           return normalized;
         }
