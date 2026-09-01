@@ -75,10 +75,11 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
                 });
                 if (error) {
                     console.error("Supabase resetPasswordForEmail error:", error);
-                    if (error.message?.includes("60 seconds") || error.message?.includes("security purposes")) {
-                        toast.error("Aguarde 60 segundos antes de solicitar um novo e-mail.");
-                    } else if (error.message?.toLowerCase().includes("rate limit")) {
-                        toast.error("Limite de solicitações atingido. Aguarde alguns minutos antes de tentar novamente.");
+                    const msg = (error.message || "").toLowerCase();
+                    if (msg.includes("rate limit") || msg.includes("rate_limit") || error.status === 429) {
+                        toast.error("Limite temporário de envios de e-mail atingido no Supabase. Aguarde alguns minutos ou verifique sua caixa de entrada/spam.");
+                    } else if (msg.includes("60 seconds") || msg.includes("security purposes")) {
+                        toast.error("Por segurança, aguarde 60 segundos antes de solicitar um novo e-mail.");
                     } else {
                         toast.error(error.message || "Não foi possível enviar o e-mail.");
                     }
