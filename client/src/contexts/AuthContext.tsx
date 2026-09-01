@@ -10,11 +10,12 @@ interface AuthContextType {
     isMasterMode: boolean;
     toggleMasterMode: (enabled?: boolean) => void;
     signOut: () => Promise<void>;
-    authModal: { open: boolean; mode: "login" | "register" };
+    authModal: { open: boolean; mode: "login" | "register" | "forgot_password" | "update_password" };
     openLogin: () => void;
     openRegister: () => void;
+    openForgotPassword: () => void;
     closeAuth: () => void;
-    setAuthModalMode: (mode: "login" | "register") => void;
+    setAuthModalMode: (mode: "login" | "register" | "forgot_password" | "update_password") => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return false;
     });
-    const [authModal, setAuthModal] = useState<{ open: boolean; mode: "login" | "register" }>({
+    const [authModal, setAuthModal] = useState<{ open: boolean; mode: "login" | "register" | "forgot_password" | "update_password" }>({
         open: false,
         mode: "login"
     });
@@ -67,10 +68,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             });
 
         // Listen for changes on auth state (logged in, signed out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
+
+            if (event === 'PASSWORD_RECOVERY') {
+                setAuthModal({ open: true, mode: "update_password" });
+            }
         });
 
         return () => subscription.unsubscribe();
@@ -82,8 +87,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const openLogin = () => setAuthModal({ open: true, mode: "login" });
     const openRegister = () => setAuthModal({ open: true, mode: "register" });
+    const openForgotPassword = () => setAuthModal({ open: true, mode: "forgot_password" });
     const closeAuth = () => setAuthModal(prev => ({ ...prev, open: false }));
-    const setAuthModalMode = (mode: "login" | "register") => setAuthModal(prev => ({ ...prev, mode }));
+    const setAuthModalMode = (mode: "login" | "register" | "forgot_password" | "update_password") => setAuthModal(prev => ({ ...prev, mode }));
 
     const value = {
         user,
@@ -96,6 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         authModal,
         openLogin,
         openRegister,
+        openForgotPassword,
         closeAuth,
         setAuthModalMode
     };
