@@ -362,10 +362,11 @@ propertiesRouter.get("/", async (req, res) => {
       "_t": isRefresh ? Date.now().toString() : Math.floor(Date.now() / (5 * 60 * 1000)).toString(),
     };
 
-    if (sort === "newest" || sort === "createdAt") {
-      params["order[property.createdAt]"] = "DESC";
-    } else {
+    if (sort === "popular" || sort === "views") {
       params["order[property.views]"] = "DESC";
+    } else {
+      // Default: newest properties first
+      params["order[property.createdAt]"] = "DESC";
     }
 
     if (req.query.bedrooms) {
