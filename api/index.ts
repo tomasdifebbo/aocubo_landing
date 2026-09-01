@@ -413,7 +413,25 @@ propertiesRouter.get("/", async (req, res) => {
       }
     }
 
-    const data = await fetchAocubo("", params);
+    let data = await fetchAocubo("", params);
+
+    // Smart Fallback: If searching by neighborhood yielded 0 items, retry searching by property name
+    const searchTerm = (req.query.neighborhood || req.query.q || req.query.search) as string | undefined;
+    if ((!data.content || data.content.length === 0) && searchTerm) {
+      const cleanTerm = String(searchTerm).trim();
+      const ignoredTerms = ["são paulo", "sao paulo", "sp", "são paulo - sp", "sao paulo - sp", "são paulo/sp", "sao paulo/sp"];
+      if (!ignoredTerms.includes(cleanTerm.toLowerCase())) {
+        const fallbackParams = { ...params };
+        delete fallbackParams["search[neighborhood.name][value]"];
+        delete fallbackParams["search[neighborhood.name][type]"];
+        fallbackParams["search[property.name][value]"] = cleanTerm;
+        fallbackParams["search[property.name][type]"] = "ILIKE";
+        const fallbackData = await fetchAocubo("", fallbackParams);
+        if (fallbackData.content && fallbackData.content.length > 0) {
+          data = fallbackData;
+        }
+      }
+    }
 
     const rawItems = (data.content || data.items || data.data || []).filter((item: any) => item && (item.id || item.slug));
     const total = data.totalElements || data.total || rawItems.length || 0;
