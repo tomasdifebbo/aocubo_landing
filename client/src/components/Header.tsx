@@ -86,12 +86,14 @@ export default function Header() {
               Sobre
             </span>
           </Link>
-          <Link href="/admin">
-            <span className="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors cursor-pointer flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-              <Crown className="w-3.5 h-3.5" />
-              Painel Master
-            </span>
-          </Link>
+          {isAdmin && (
+            <Link href="/admin">
+              <span className="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors cursor-pointer flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                <Crown className="w-3.5 h-3.5" />
+                Painel Master
+              </span>
+            </Link>
+          )}
           <a href="https://wa.me/5511995137769" target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:text-primary transition-colors">
             Contato
           </a>

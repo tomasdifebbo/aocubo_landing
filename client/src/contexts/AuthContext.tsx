@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
     };
 
-    const isAdmin = isMasterMode || !!(user && (
+    const isAdmin = !!user && (isMasterMode || !!(
         user.email?.toLowerCase().includes("admin") ||
         user.email?.toLowerCase().includes("master") ||
         user.email?.toLowerCase() === "tomasdife@gmail.com" ||
@@ -82,6 +82,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const signOut = async () => {
+        setIsMasterMode(false);
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("aocubo_master_mode");
+        }
         await supabase.auth.signOut();
     };
 

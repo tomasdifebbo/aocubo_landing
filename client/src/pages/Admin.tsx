@@ -126,29 +126,31 @@ export default function Admin() {
                         <div className="space-y-2">
                             <h2 className="text-2xl font-serif italic font-normal text-white">Acesso Restrito: Painel Master</h2>
                             <p className="text-sm text-slate-400 font-light leading-relaxed">
-                                Este painel é reservado exclusivamente para a gestão de administradores. Ative o Modo Master ou faça login com sua conta administrativa.
+                                {user
+                                    ? "Sua conta atual não possui permissões administrativas para acessar este painel."
+                                    : "Este painel é reservado exclusivamente para administradores. Faça login com sua conta para continuar."}
                             </p>
                         </div>
 
                         <div className="pt-2 space-y-3">
-                            <Button
-                                onClick={() => {
-                                    toggleMasterMode(true);
-                                    toast.success("Modo Master Ativado com sucesso!");
-                                }}
-                                className="w-full bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 h-12 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
-                            >
-                                <ShieldCheck className="w-5 h-5" />
-                                Ativar Modo Master Agora
-                            </Button>
-
-                            {!user && (
+                            {!user ? (
                                 <Button
-                                    variant="outline"
                                     onClick={openLogin}
-                                    className="w-full border-slate-700 text-slate-300 hover:bg-slate-800 h-12 rounded-xl"
+                                    className="w-full bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 h-12 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
-                                    Entrar com Conta Existente
+                                    <ShieldCheck className="w-5 h-5" />
+                                    Entrar com Conta de Administrador
+                                </Button>
+                            ) : (
+                                <Button
+                                    onClick={() => {
+                                        toggleMasterMode(true);
+                                        toast.success("Modo Master Ativado com sucesso!");
+                                    }}
+                                    className="w-full bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 h-12 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+                                >
+                                    <ShieldCheck className="w-5 h-5" />
+                                    Ativar Modo Master
                                 </Button>
                             )}
                         </div>
