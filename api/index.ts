@@ -26,6 +26,7 @@ export interface PropertyData {
   type: string;
   maxBedrooms: number;
   address?: string;
+  createdAt?: string;
 }
 
 // ─── SERVICES ─────────────────────────────────────────────────────────────
