@@ -65,10 +65,18 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
                 toast.success("Login realizado com sucesso!");
                 onClose();
             } else if (view === "forgot_password") {
-                const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: `${window.location.origin}/`,
+                const cleanEmail = email.trim().toLowerCase();
+                const redirectUrl = window.location.origin.endsWith('/')
+                    ? window.location.origin
+                    : `${window.location.origin}/`;
+
+                const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+                    redirectTo: redirectUrl,
                 });
-                if (error) throw error;
+                if (error) {
+                    console.error("Supabase resetPasswordForEmail error:", error);
+                    throw error;
+                }
                 setEmailSent(true);
                 toast.success("E-mail de redefinição enviado! Verifique sua caixa de entrada.");
             } else if (view === "update_password") {
