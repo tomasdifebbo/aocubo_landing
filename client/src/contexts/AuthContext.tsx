@@ -48,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user.email?.toLowerCase().includes("admin") ||
         user.email?.toLowerCase().includes("master") ||
         user.email?.toLowerCase() === "tomasdife@gmail.com" ||
+        user.email?.toLowerCase() === "galdinojc.jc@gmail.com" ||
         user.user_metadata?.role === "admin" ||
         user.user_metadata?.role === "master"
     ));
