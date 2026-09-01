@@ -1,12 +1,33 @@
 {
-    "rewrites": [
+    "version": 2,
+    "builds": [
         {
-            "source": "/api/(.*)",
-            "destination": "/api/index.ts"
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist/public",
+                "installCommand": "npm install --legacy-peer-deps"
+            }
         },
         {
-            "source": "/((?!api/).*)",
-            "destination": "/index.html"
+            "src": "api/index.ts",
+            "use": "@vercel/node",
+            "config": {
+                "installCommand": "npm install --legacy-peer-deps"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "api/index.ts"
+        },
+        {
+            "handle": "filesystem"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
         }
     ]
 }
