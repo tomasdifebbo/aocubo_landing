@@ -75,6 +75,13 @@ export default function AuthModal({ isOpen, onClose, mode, onSwitchMode }: AuthM
                 });
                 if (error) {
                     console.error("Supabase resetPasswordForEmail error:", error);
+                    if (error.message?.includes("60 seconds") || error.message?.includes("security purposes")) {
+                        toast.error("Aguarde 60 segundos antes de solicitar um novo e-mail.");
+                    } else if (error.message?.toLowerCase().includes("rate limit")) {
+                        toast.error("Limite de solicitações atingido. Aguarde alguns minutos antes de tentar novamente.");
+                    } else {
+                        toast.error(error.message || "Não foi possível enviar o e-mail.");
+                    }
                     throw error;
                 }
                 setEmailSent(true);
