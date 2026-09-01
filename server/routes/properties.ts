@@ -16,8 +16,9 @@ router.get("/", async (req: Request, res: Response) => {
         const status = req.query.status as string | undefined;
         const neighborhood = req.query.neighborhood as string | undefined;
         const parkingSlots = req.query.parkingSlots ? parseInt(req.query.parkingSlots as string) : undefined;
+        const sort = req.query.sort as string | undefined;
 
-        const result = await fetchProperties({ page, limit, bedrooms, minPrice, maxPrice, status, neighborhood, parkingSlots });
+        const result = await fetchProperties({ page, limit, bedrooms, minPrice, maxPrice, status, neighborhood, parkingSlots, sort });
 
         res.json(result);
     } catch (error) {

@@ -6,6 +6,9 @@ interface AuthContextType {
     user: User | null;
     session: Session | null;
     loading: boolean;
+    isAdmin: boolean;
+    isMasterMode: boolean;
+    toggleMasterMode: (enabled?: boolean) => void;
     signOut: () => Promise<void>;
     authModal: { open: boolean; mode: "login" | "register" };
     openLogin: () => void;
@@ -20,18 +23,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isMasterMode, setIsMasterMode] = useState<boolean>(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("aocubo_master_mode") === "true";
+        }
+        return false;
+    });
     const [authModal, setAuthModal] = useState<{ open: boolean; mode: "login" | "register" }>({
         open: false,
         mode: "login"
     });
 
+    const toggleMasterMode = (enabled?: boolean) => {
+        setIsMasterMode((prev) => {
+            const next = enabled !== undefined ? enabled : !prev;
+            if (typeof window !== "undefined") {
+                localStorage.setItem("aocubo_master_mode", String(next));
+            }
+            return next;
+        });
+    };
+
+    const isAdmin = isMasterMode || !!(user && (
+        user.email?.toLowerCase().includes("admin") ||
+        user.email?.toLowerCase().includes("master") ||
+        user.email?.toLowerCase() === "tomasdife@gmail.com" ||
+        user.user_metadata?.role === "admin" ||
+        user.user_metadata?.role === "master"
+    ));
+
     useEffect(() => {
         // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
+        supabase.auth.getSession()
+            .then(({ data: { session } }) => {
+                setSession(session);
+                setUser(session?.user ?? null);
+                setLoading(false);
+            })
+            .catch((err) => {
+                console.error('Erro ao verificar sessão do Supabase:', err);
+                setLoading(false);
+            });
 
         // Listen for changes on auth state (logged in, signed out, etc.)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -56,6 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         session,
         loading,
+        isAdmin,
+        isMasterMode,
+        toggleMasterMode,
         signOut,
         authModal,
         openLogin,

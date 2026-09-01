@@ -73,6 +73,7 @@ export interface Property {
     units: PropertyUnit[];
     type: string;
     maxBedrooms: number;
+    createdAt?: string;
 }
 
 export interface PropertiesResponse {

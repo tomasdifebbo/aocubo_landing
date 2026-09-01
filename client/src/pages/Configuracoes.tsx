@@ -7,15 +7,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { User, Mail, Shield, Bell, Save, Loader2, Lock, Smartphone } from "lucide-react";
+import { User, Mail, Shield, Bell, Save, Loader2, Lock, Smartphone, Crown } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
-type Tab = "perfil" | "notificacoes" | "seguranca";
+type Tab = "perfil" | "notificacoes" | "seguranca" | "master";
 
 export default function Configuracoes() {
-    const { user } = useAuth();
+    const { user, isAdmin, isMasterMode, toggleMasterMode } = useAuth();
     const [location, setLocation] = useLocation();
     const [activeTab, setActiveTab] = useState<Tab>("perfil");
     const [loading, setLoading] = useState(false);
@@ -151,6 +151,14 @@ export default function Configuracoes() {
                             >
                                 <Shield className={`w-4 h-4 ${activeTab === "seguranca" ? "text-primary" : "text-slate-400"}`} />
                                 Segurança
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setActiveTab("master")}
+                                className={`w-full justify-start gap-3 rounded-2xl transition-all ${activeTab === "master" ? "bg-amber-50 shadow-sm font-semibold text-amber-700 border border-amber-200" : "text-amber-700/80 hover:bg-amber-50/50"}`}
+                            >
+                                <Crown className="w-4 h-4 text-amber-500" />
+                                Conta Master
                             </Button>
                         </aside>
 
@@ -335,6 +343,54 @@ export default function Configuracoes() {
                                                     </div>
                                                     <Button variant="ghost" className="text-primary font-bold hover:bg-white">Ativar</Button>
                                                 </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            )}
+
+                            {activeTab === "master" && (
+                                <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
+                                    <Card className="border-0 shadow-sm rounded-3xl overflow-hidden bg-slate-900 text-white">
+                                        <CardHeader className="p-8 border-b border-slate-800">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                                                    <Crown className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <CardTitle className="text-xl font-serif italic text-white">Painel da Conta Master</CardTitle>
+                                                    <CardDescription className="text-slate-400">
+                                                        Gerencie privilégios administrativos e acesse o monitoramento em tempo real dos imóveis da AoCubo.
+                                                    </CardDescription>
+                                                </div>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="p-8 space-y-6">
+                                            <div className="flex items-center justify-between p-5 bg-slate-950/80 rounded-2xl border border-slate-800">
+                                                <div>
+                                                    <h4 className="font-semibold text-white text-base">Modo Master Ativo</h4>
+                                                    <p className="text-xs text-slate-400 mt-1">
+                                                        {isMasterMode
+                                                            ? "Sua conta está configurada com permissão total de administrador Master."
+                                                            : "Ative o Modo Master para liberar o painel de novos lançamentos da AoCubo."}
+                                                    </p>
+                                                </div>
+                                                <Switch
+                                                    checked={isMasterMode}
+                                                    onCheckedChange={(checked) => {
+                                                        toggleMasterMode(checked);
+                                                        toast.success(checked ? "Modo Master ativado!" : "Modo Master desativado.");
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div className="pt-2">
+                                                <Link href="/admin">
+                                                    <Button className="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold h-12 rounded-xl text-sm shadow-lg flex items-center justify-center gap-2">
+                                                        <Crown className="w-4 h-4" />
+                                                        Abrir Feed de Novos Imóveis AoCubo (Painel Master)
+                                                    </Button>
+                                                </Link>
                                             </div>
                                         </CardContent>
                                     </Card>

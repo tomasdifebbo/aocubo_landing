@@ -95,7 +95,7 @@ function parseDescription(desc: any): string {
     return "";
 }
 
-function normalise(raw: RawProperty, fullUnits?: any[], filterBedrooms?: number, filterParkingSlots?: number): Property {
+function normalise(raw: RawProperty, fullUnits?: any[], filterBedrooms?: number, filterParkingSlots?: number, minPrice?: number, maxPrice?: number): Property {
     const units = Array.isArray((raw as any).units) ? (raw as any).units : [];
 
     const mappedUnits: any[] = units.map((u: any) => {
@@ -132,6 +132,12 @@ function normalise(raw: RawProperty, fullUnits?: any[], filterBedrooms?: number,
         } else {
             targetUnits = targetUnits.filter((u: any) => (u.parkingSlots ?? u.parking_slots ?? 0) === filterParkingSlots);
         }
+    }
+    if (minPrice !== undefined) {
+        targetUnits = targetUnits.filter((u: any) => u.price >= minPrice);
+    }
+    if (maxPrice !== undefined) {
+        targetUnits = targetUnits.filter((u: any) => u.price <= maxPrice);
     }
     // Fallback if strict filter yields nothing
     if (targetUnits.length === 0) targetUnits = fullUnits && fullUnits.length > 0 ? fullUnits : mappedUnits;
@@ -260,6 +266,7 @@ function normalise(raw: RawProperty, fullUnits?: any[], filterBedrooms?: number,
         characteristics,
         units: mappedUnits,
         type: propertyTypeName,
+        createdAt: (raw as any).createdAt || (raw as any).created_at || undefined,
     };
 }
 
@@ -273,10 +280,11 @@ interface FetchOptions {
     status?: string;
     neighborhood?: string;
     parkingSlots?: number;
+    sort?: string;
 }
 
 export async function fetchProperties(opts: FetchOptions): Promise<PropertiesResponse> {
-    const { page, limit, bedrooms, minPrice, maxPrice } = opts;
+    const { page, limit, bedrooms, minPrice, maxPrice, sort } = opts;
 
     // Build query string for aocubo API
     const params = new URLSearchParams();
@@ -287,7 +295,12 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
     params.set("search[state.code][type]", "ILIKE");
     params.set("search[city.name][value]", "sao-paulo");
     params.set("search[city.name][type]", "EQUAL_UNACCENT");
-    params.set("order[property.views]", "DESC");
+
+    if (sort === "newest" || sort === "createdAt") {
+        params.set("order[property.createdAt]", "DESC");
+    } else {
+        params.set("order[property.views]", "DESC");
+    }
 
     // Price filter
     const priceMin = minPrice ?? 100000;
@@ -349,7 +362,7 @@ export async function fetchProperties(opts: FetchOptions): Promise<PropertiesRes
     const rawItems = raw.content ?? [];
     const properties = await Promise.all(rawItems.map(async (item: any) => {
         const fullUnits = await getAggregatedUnits(String(item.id), item.units);
-        return normalise(item, fullUnits, opts.bedrooms, opts.parkingSlots);
+        return normalise(item, fullUnits, opts.bedrooms, opts.parkingSlots, minPrice, maxPrice);
     }));
 
     const result: PropertiesResponse = {

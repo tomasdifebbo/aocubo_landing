@@ -34,6 +34,7 @@ export interface PropertyData {
     type: string;
     maxBedrooms: number;
     address?: string;
+    createdAt?: string;
 }
 
 export interface PropertiesResult {
@@ -52,6 +53,7 @@ export interface UsePropertiesOptions {
     status?: string;
     neighborhood?: string;
     parkingSlots?: number;
+    sort?: string;
 }
 
 export interface UsePropertiesReturn {
@@ -62,7 +64,7 @@ export interface UsePropertiesReturn {
 }
 
 export function useProperties(options: UsePropertiesOptions = {}): UsePropertiesReturn {
-    const { page = 1, limit = 6, bedrooms, minPrice, maxPrice } = options;
+    const { page = 1, limit = 6, bedrooms, minPrice, maxPrice, sort } = options;
 
     const [data, setData] = useState<PropertiesResult | null>(null);
     const [loading, setLoading] = useState(true);
@@ -86,6 +88,7 @@ export function useProperties(options: UsePropertiesOptions = {}): UseProperties
             if (options.status) params.set("status", options.status);
             if (options.neighborhood) params.set("neighborhood", options.neighborhood);
             if (options.parkingSlots !== undefined) params.set("parkingSlots", String(options.parkingSlots));
+            if (sort) params.set("sort", sort);
 
             try {
                 const res = await fetch(`/api/properties?${params.toString()}`);

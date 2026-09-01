@@ -14,6 +14,7 @@ import { FavoritesProvider } from "./contexts/FavoritesContext";
 import ScrollToTop from "./components/ScrollToTop";
 import Legal from "./pages/Legal";
 import Configuracoes from "./pages/Configuracoes";
+import Admin from "./pages/Admin";
 
 
 function Router() {
@@ -29,6 +30,7 @@ function Router() {
       <Route path={"/termos"} component={Legal} />
       <Route path={"/cookies"} component={Legal} />
       <Route path={"/configuracoes"} component={Configuracoes} />
+      <Route path={"/admin"} component={Admin} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

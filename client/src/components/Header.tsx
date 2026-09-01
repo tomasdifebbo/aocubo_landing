@@ -12,13 +12,13 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { UserCircle, LogOut, Settings, Heart, Menu, Home, Building2, Info, Phone, Mail, ShoppingCart } from "lucide-react";
+import { UserCircle, LogOut, Settings, Heart, Menu, Home, Building2, Info, Phone, Mail, ShoppingCart, Crown } from "lucide-react";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useFavoritesData } from "@/hooks/useFavoritesData";
 import { toast } from "sonner";
 
 export default function Header() {
-  const { user, signOut, authModal, openLogin, openRegister, closeAuth, setAuthModalMode } = useAuth();
+  const { user, isAdmin, signOut, authModal, openLogin, openRegister, closeAuth, setAuthModalMode } = useAuth();
   const { favorites } = useFavorites();
   const { data: favsData } = useFavoritesData();
 
@@ -86,6 +86,12 @@ export default function Header() {
               Sobre
             </span>
           </Link>
+          <Link href="/admin">
+            <span className="text-sm font-semibold text-amber-600 hover:text-amber-700 transition-colors cursor-pointer flex items-center gap-1.5 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+              <Crown className="w-3.5 h-3.5" />
+              Painel Master
+            </span>
+          </Link>
           <a href="https://wa.me/5511995137769" target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:text-primary transition-colors">
             Contato
           </a>
@@ -103,6 +109,12 @@ export default function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <Link href="/admin">
+                  <DropdownMenuItem className="cursor-pointer font-bold text-amber-600">
+                    <Crown className="mr-2 h-4 w-4" />
+                    <span>Painel Master</span>
+                  </DropdownMenuItem>
+                </Link>
                 <Link href="/favoritos">
                   <DropdownMenuItem className="cursor-pointer">
                     <Heart className="mr-2 h-4 w-4" />
@@ -254,6 +266,12 @@ export default function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <Link href="/admin">
+                  <DropdownMenuItem className="cursor-pointer font-bold text-amber-600">
+                    <Crown className="mr-2 h-4 w-4 text-amber-500" />
+                    <span>Painel Master</span>
+                  </DropdownMenuItem>
+                </Link>
                 <Link href="/favoritos">
                   <DropdownMenuItem className="cursor-pointer">
                     <Heart className="mr-2 h-4 w-4" />

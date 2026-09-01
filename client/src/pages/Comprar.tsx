@@ -185,7 +185,7 @@ export default function Comprar() {
                                             <SelectValue placeholder="Sem limite" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-2xl border-slate-100 shadow-xl">
-                                            <SelectItem value="0" className="cursor-pointer">Max</SelectItem>
+                                            <SelectItem value="0" className="cursor-pointer">Qualquer valor</SelectItem>
                                             <SelectItem value="250000" className="cursor-pointer">Até 250 mil</SelectItem>
                                             <SelectItem value="400000" className="cursor-pointer">Até 400 mil</SelectItem>
                                             <SelectItem value="500000" className="cursor-pointer">Até 500 mil</SelectItem>

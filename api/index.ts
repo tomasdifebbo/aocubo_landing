@@ -340,7 +340,8 @@ function normalizeProperty(raw: any, aggregatedMax?: number, filterBedrooms?: nu
       const street = addr.address || addr.street || addr.publicPlace || "";
       const number = addr.number || addr.streetNumber || "";
       return street ? (number ? `${street}, ${number}` : street) : "";
-    })()
+    })(),
+    createdAt: raw.createdAt || raw.created_at || undefined
   };
 }
 
@@ -351,6 +352,7 @@ propertiesRouter.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 6;
+    const sort = req.query.sort as string | undefined;
 
     const params: any = {
       page: page, // Fixed: AoCubo 0/1 are both page 1. Using 1-indexed fixes page 2.
@@ -360,8 +362,13 @@ propertiesRouter.get("/", async (req, res) => {
       "search[state.code][type]": "ILIKE",
       "search[city.name][value]": "sao-paulo",
       "search[city.name][type]": "EQUAL_UNACCENT",
-      "order[property.views]": "DESC"
     };
+
+    if (sort === "newest" || sort === "createdAt") {
+      params["order[property.createdAt]"] = "DESC";
+    } else {
+      params["order[property.views]"] = "DESC";
+    }
 
     if (req.query.bedrooms) {
       params["search[units.bedrooms][value]"] = req.query.bedrooms;
