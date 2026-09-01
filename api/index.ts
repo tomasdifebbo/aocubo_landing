@@ -314,7 +314,7 @@ function normalizeProperty(raw: any, aggregatedMax?: number, filterBedrooms?: nu
     slug: raw.slug || id,
     description: parseDescription(raw.description),
     price: pVal,
-    priceFormatted: pVal.toLocaleString("pt-BR"),
+    priceFormatted: pVal > 0 ? pVal.toLocaleString("pt-BR") : "Sob consulta",
     neighborhood: getString(raw.neighborhood || raw.address?.neighborhood, "São Paulo"),
     bedrooms: Number(refUnit.bedrooms ?? raw.bedrooms ?? mainUnit.bedrooms ?? 0),
     maxBedrooms: (() => {
@@ -354,15 +354,12 @@ propertiesRouter.get("/", async (req, res) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 6;
     const sort = req.query.sort as string | undefined;
+    const isRefresh = req.query.refresh === "true";
 
     const params: any = {
-      page: page, // Fixed: AoCubo 0/1 are both page 1. Using 1-indexed fixes page 2.
+      page: page,
       size: limit,
-      "_t": Date.now().toString(),
-      "search[state.code][value]": "sp",
-      "search[state.code][type]": "ILIKE",
-      "search[city.name][value]": "sao-paulo",
-      "search[city.name][type]": "EQUAL_UNACCENT",
+      "_t": isRefresh ? Date.now().toString() : Math.floor(Date.now() / (5 * 60 * 1000)).toString(),
     };
 
     if (sort === "newest" || sort === "createdAt") {

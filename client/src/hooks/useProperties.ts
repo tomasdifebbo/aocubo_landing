@@ -90,6 +90,8 @@ export function useProperties(options: UsePropertiesOptions = {}): UseProperties
             if (options.parkingSlots !== undefined) params.set("parkingSlots", String(options.parkingSlots));
             if (sort) params.set("sort", sort);
 
+            if (tick > 0) params.set("refresh", "true");
+
             try {
                 const res = await fetch(`/api/properties?${params.toString()}`);
                 if (!res.ok) throw new Error(`Erro ${res.status}`);
