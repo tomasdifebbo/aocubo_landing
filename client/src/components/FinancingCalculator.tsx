@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Calculator, DollarSign, Send, Percent, Calendar, ShieldCheck, Sparkles } from "lucide-react";
+import { Calculator, DollarSign, Send, Layers, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function FinancingCalculator() {
@@ -11,26 +11,36 @@ export function FinancingCalculator() {
   const [downPaymentPercent, setDownPaymentPercent] = useState<number>(20);
   const [interestRateYearly, setInterestRateYearly] = useState<number>(10.5);
   const [years, setYears] = useState<number>(30);
+  const [system, setSystem] = useState<"PRICE" | "SAC" | "BOTH">("BOTH");
 
-  // Calculations
+  // Base Calculations
   const downPaymentValue = (propertyPrice * downPaymentPercent) / 100;
   const financedAmount = propertyPrice - downPaymentValue;
   const totalMonths = years * 12;
   const monthlyInterestRate = interestRateYearly / 100 / 12;
 
-  // SAC / Price estimated first installment
+  // 1. SAC Calculation (1st Payment)
   const monthlyAmortization = financedAmount / totalMonths;
   const initialInterest = financedAmount * monthlyInterestRate;
-  const estimatedFirstPayment = monthlyAmortization + initialInterest;
+  const sacFirstPayment = monthlyAmortization + initialInterest;
+
+  // 2. PRICE Calculation (Fixed Monthly Payment)
+  const priceFactor = (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalMonths)) /
+                      (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
+  const priceFixedPayment = financedAmount * priceFactor;
 
   const handleCopySimulation = () => {
     const text = `🧮 *Simulação de Financiamento - ADJ'S Imóveis* 🏢
 
 *Valor do Imóvel:* R$ ${propertyPrice.toLocaleString("pt-BR")}
 *Entrada (${downPaymentPercent}%):* R$ ${downPaymentValue.toLocaleString("pt-BR")}
-*Valor Financiado (${100 - downPaymentPercent}%):* R$ ${financedAmount.toLocaleString("pt-BR")}
-*Prazo:* ${years} anos (${totalMonths} parcelas)
-*1ª Parcela Estimada:* R$ ${Math.round(estimatedFirstPayment).toLocaleString("pt-BR")}/mês
+*Saldo Financiado:* R$ ${financedAmount.toLocaleString("pt-BR")} (${years} anos)
+
+📊 *Tabela PRICE (Parcelas Fixas):*
+   R$ ${Math.round(priceFixedPayment).toLocaleString("pt-BR")}/mês
+
+📉 *Tabela SAC (1ª Parcela Decrescente):*
+   R$ ${Math.round(sacFirstPayment).toLocaleString("pt-BR")}/mês
 
 📲 _Dúvidas ou agendamento de visita? Entre em contato agora!_`;
 
@@ -39,21 +49,21 @@ export function FinancingCalculator() {
   };
 
   const handleShareWhatsApp = () => {
-    const text = `🧮 *Simulação de Financiamento - ADJ'S Imóveis* 🏢%0A%0A*Valor do Imóvel:* R$ ${propertyPrice.toLocaleString("pt-BR")}%0A*Entrada (${downPaymentPercent}%):* R$ ${downPaymentValue.toLocaleString("pt-BR")}%0A*Valor Financiado:* R$ ${financedAmount.toLocaleString("pt-BR")}%0A*Prazo:* ${years} anos%0A*1ª Parcela Estimada:* R$ ${Math.round(estimatedFirstPayment).toLocaleString("pt-BR")}/mês%0A%0A📲 _Entre em contato para agendar uma visita!_`;
+    const text = `🧮 *Simulação de Financiamento - ADJ'S Imóveis* 🏢%0A%0A*Valor do Imóvel:* R$ ${propertyPrice.toLocaleString("pt-BR")}%0A*Entrada (${downPaymentPercent}%):* R$ ${downPaymentValue.toLocaleString("pt-BR")}%0A*Financiado:* R$ ${financedAmount.toLocaleString("pt-BR")} (${years} anos)%0A%0A📊 *Tabela PRICE (Parcela Fixa):* R$ ${Math.round(priceFixedPayment).toLocaleString("pt-BR")}/mês%0A📉 *Tabela SAC (1ª Parcela):* R$ ${Math.round(sacFirstPayment).toLocaleString("pt-BR")}/mês%0A%0A📲 _Entre em contato para agendar uma visita!_`;
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
   return (
     <Card className="bg-slate-900/90 border-slate-800 text-white rounded-3xl p-6 shadow-2xl backdrop-blur-md">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1">
             <Calculator className="w-4 h-4" />
             Ferramenta do Corretor
           </div>
-          <h3 className="text-xl font-serif italic text-white">Simulador de Financiamento Rápido</h3>
+          <h3 className="text-xl font-serif italic text-white">Simulador de Financiamento (PRICE & SAC)</h3>
         </div>
-        <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20">
+        <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center border border-amber-500/20 self-start sm:self-auto">
           <DollarSign className="w-5 h-5" />
         </div>
       </div>
@@ -97,6 +107,45 @@ export function FinancingCalculator() {
             <Label className="text-xs text-slate-400 mb-1.5 block">Prazo de Financiamento (Anos)</Label>
             <SelectYears years={years} setYears={setYears} />
           </div>
+
+          <div>
+            <Label className="text-xs text-slate-400 mb-1.5 block">Sistema de Amortização</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setSystem("BOTH")}
+                className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  system === "BOTH"
+                    ? "bg-amber-500 text-slate-950 border-amber-500"
+                    : "bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800"
+                }`}
+              >
+                Ambos (PRICE + SAC)
+              </button>
+              <button
+                type="button"
+                onClick={() => setSystem("PRICE")}
+                className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  system === "PRICE"
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800"
+                }`}
+              >
+                Tabela PRICE
+              </button>
+              <button
+                type="button"
+                onClick={() => setSystem("SAC")}
+                className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${
+                  system === "SAC"
+                    ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                    : "bg-slate-950 text-slate-400 border-slate-800 hover:bg-slate-800"
+                }`}
+              >
+                Tabela SAC
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Output Results */}
@@ -116,15 +165,41 @@ export function FinancingCalculator() {
               </span>
             </div>
 
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mt-2">
-              <span className="text-xs text-amber-400 uppercase tracking-wider font-semibold block mb-1">
-                Estimativa da 1ª Parcela (SAC)
-              </span>
-              <span className="text-2xl md:text-3xl font-bold text-amber-400">
-                R$ {Math.round(estimatedFirstPayment).toLocaleString("pt-BR")}
-                <span className="text-xs font-normal text-slate-400"> /mês</span>
-              </span>
-            </div>
+            {/* TABELA PRICE RESULT */}
+            {(system === "PRICE" || system === "BOTH") && (
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3.5 mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-blue-400 uppercase tracking-wider font-bold block">
+                    📊 Tabela PRICE (Parcela Fixa)
+                  </span>
+                  <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                    Fixa do início ao fim
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-blue-400 mt-1">
+                  R$ {Math.round(priceFixedPayment).toLocaleString("pt-BR")}
+                  <span className="text-xs font-normal text-slate-400"> /mês</span>
+                </div>
+              </div>
+            )}
+
+            {/* TABELA SAC RESULT */}
+            {(system === "SAC" || system === "BOTH") && (
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3.5 mt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-amber-400 uppercase tracking-wider font-bold block">
+                    📉 Tabela SAC (1ª Parcela)
+                  </span>
+                  <span className="text-[10px] text-slate-400 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                    Parcelas decrescentes
+                  </span>
+                </div>
+                <div className="text-2xl font-bold text-amber-400 mt-1">
+                  R$ {Math.round(sacFirstPayment).toLocaleString("pt-BR")}
+                  <span className="text-xs font-normal text-slate-400"> /mês</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-2 pt-2">
