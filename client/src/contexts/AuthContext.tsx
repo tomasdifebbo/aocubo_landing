@@ -46,10 +46,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const isAdmin = !!user && (isMasterMode || !!(
-        user.email?.toLowerCase().includes("admin") ||
-        user.email?.toLowerCase().includes("master") ||
+        user.email?.toLowerCase().includes("tomasdife") ||
         user.email?.toLowerCase() === "tomasdife@gmail.com" ||
+        user.email?.toLowerCase() === "tomasdifebbo.tdf@gmail.com" ||
         user.email?.toLowerCase() === "galdinojc.jc@gmail.com" ||
+        user.email?.toLowerCase() === "uesle_1992@hotmail.com" ||
         user.user_metadata?.role === "admin" ||
         user.user_metadata?.role === "master"
     ));
